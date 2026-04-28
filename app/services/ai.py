@@ -1,0 +1,57 @@
+import json
+from openai import OpenAI
+from app.config import OPENAI_API_KEY, OPENAI_MODEL
+from app.prompt import SYSTEM_PROMPT
+from app.schema import RESPONSE_SCHEMA
+
+_client = OpenAI(api_key=OPENAI_API_KEY)
+
+
+def generate_turn(
+    session: dict,
+    history: list[dict],
+    user_message: str,
+    pending_intents: list[str] | None = None,
+) -> dict:
+    messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+
+    state_parts = []
+
+    if session.get("phase_current"):
+        state_parts.append(f"Fase actual: {session['phase_current']}")
+    if session.get("intent_current") and session["intent_current"] != "unknown":
+        state_parts.append(f"Intención activa: {session['intent_current']}")
+
+    captured = {k: v for k, v in (session.get("captured_fields") or {}).items() if not k.startswith("_")}
+    if captured:
+        state_parts.append(f"Datos ya capturados: {json.dumps(captured, ensure_ascii=False)}")
+
+    # Inyectar estado del cliente (resultado del lookup en Supabase)
+    private = {k: v for k, v in (session.get("captured_fields") or {}).items() if k.startswith("_")}
+    if private.get("_client_found"):
+        name = private.get("_client_display_name", "")
+        addr = private.get("_client_address") or "sin dirección registrada"
+        state_parts.append(f"CLIENTE ENCONTRADO: {name} — Dirección registrada: {addr}")
+    elif private.get("_client_not_found"):
+        state_parts.append("CLIENTE NO ENCONTRADO en base de datos. Derivar a atención al cliente.")
+
+    if pending_intents:
+        state_parts.append(f"Intenciones pendientes: {json.dumps(pending_intents, ensure_ascii=False)}")
+
+    if state_parts:
+        messages.append({"role": "system", "content": "\n".join(state_parts)})
+
+    for msg in history:
+        role = "user" if msg["role"] == "user" else "assistant"
+        messages.append({"role": role, "content": msg["content"]})
+
+    messages.append({"role": "user", "content": user_message})
+
+    response = _client.chat.completions.create(
+        model=OPENAI_MODEL,
+        messages=messages,
+        response_format={"type": "json_schema", "json_schema": RESPONSE_SCHEMA},
+        temperature=0.3,
+    )
+
+    return json.loads(response.choices[0].message.content)

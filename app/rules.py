@@ -1,0 +1,43 @@
+from datetime import datetime, date, timedelta, timezone
+from app.config import APP_TIMEZONE, CUTOFF_HOUR, CUTOFF_MINUTE
+
+
+def get_scheduled_pickup_date(now: datetime = None) -> date:
+    """
+    Regla de corte 17:30 hora Colombia:
+    - Antes del corte → siguiente día hábil
+    - Después del corte → el día hábil que sigue al siguiente
+    """
+    if now is None:
+        now = datetime.now(timezone.utc)
+    local = now.astimezone(APP_TIMEZONE)
+    cutoff = local.replace(hour=CUTOFF_HOUR, minute=CUTOFF_MINUTE, second=0, microsecond=0)
+
+    base = local.date() + timedelta(days=1)
+    pickup = _next_business_day(base)
+
+    if local > cutoff:
+        pickup = _next_business_day(pickup + timedelta(days=1))
+
+    return pickup
+
+
+def _next_business_day(d: date) -> date:
+    while d.weekday() >= 5:
+        d += timedelta(days=1)
+    return d
+
+
+INTENT_TO_SERVICE_AREA = {
+    "route_scheduling": "route_scheduling",
+    "results":          "results",
+    "accounting":       "accounting",
+    "new_client":       "new_client",
+    "unknown":          "unknown",
+}
+
+ESCALATED_INTENTS = {"accounting", "new_client"}
+
+DONE_PHASES = {"fase_6_cierre"}
+ESCALATED_PHASES = {"fase_7_escalado"}
+TERMINAL_PHASES = DONE_PHASES | ESCALATED_PHASES

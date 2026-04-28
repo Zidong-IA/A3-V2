@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -m pytest*)",
+      "Bash(python -m pytest tests/*)",
+      "Bash(pip install -r requirements.txt)",
+      "Bash(pip freeze)",
+      "Bash(python -m app.main)",
+      "Bash(python tools/scripts/*)",
+      "Bash(python tools/*)",
+      "Bash(git status)",
+      "Bash(git diff*)",
+      "Bash(git log*)"
+    ],
+    "deny": [
+      "Bash(rm -rf /)",
+      "Bash(git push --force)",
+      "Bash(git push -f)"
+    ]
+  }
+}
