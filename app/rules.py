@@ -41,3 +41,20 @@ ESCALATED_INTENTS = {"accounting", "new_client"}
 DONE_PHASES = {"fase_6_cierre"}
 ESCALATED_PHASES = {"fase_7_escalado"}
 TERMINAL_PHASES = DONE_PHASES | ESCALATED_PHASES
+
+
+def calculate_discount(num_tests: int, subtotal: int) -> int:
+    # Placeholder: las reglas de descuento por cantidad no están definidas todavía.
+    # Cuando lleguen los tramos del cliente, implementar acá.
+    return 0
+
+
+def calculate_custom_profile_total(prices: list[int]) -> dict:
+    subtotal = sum(prices)
+    discount = calculate_discount(len(prices), subtotal)
+    return {
+        "count":    len(prices),
+        "subtotal": subtotal,
+        "discount": discount,
+        "total":    subtotal - discount,
+    }

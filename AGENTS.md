@@ -87,8 +87,7 @@ Error: `error_pending_assignment` (cliente sin motorizado)
   "phase": "collecting|confirming|done|escalated",
   "captured_fields": {
     "clinic_name": null, "tax_id": null, "pickup_address": null,
-    "exam_type": null, "priority": "normal", "patient_name": null,
-    "sample_reference": null
+    "exam_type": null, "patient_name": null
   },
   "requires_handoff": false,
   "handoff_area": null

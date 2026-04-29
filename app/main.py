@@ -26,7 +26,7 @@ def telegram_webhook():
         reply = process_turn(chat_id, user_text)
     except Exception as e:
         app.logger.error("Error processing turn for %s: %s", chat_id, e, exc_info=True)
-        reply = "Disculpa, tuve un problema interno. Ya le avisé al equipo. Por favor intenta de nuevo en un momento."
+        return jsonify({"ok": True})
 
     try:
         telegram.send_message(chat_id, reply)

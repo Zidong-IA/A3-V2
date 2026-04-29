@@ -12,6 +12,7 @@ def generate_turn(
     history: list[dict],
     user_message: str,
     pending_intents: list[str] | None = None,
+    catalog_context: str | None = None,
 ) -> dict:
     messages = [{"role": "system", "content": SYSTEM_PROMPT}]
 
@@ -37,6 +38,15 @@ def generate_turn(
 
     if pending_intents:
         state_parts.append(f"Intenciones pendientes: {json.dumps(pending_intents, ensure_ascii=False)}")
+
+    if catalog_context:
+        state_parts.append(catalog_context)
+
+    if session.get("_custom_profile_summary"):
+        state_parts.append(session["_custom_profile_summary"])
+
+    if session.get("_force_close_hint"):
+        state_parts.append(session["_force_close_hint"])
 
     if state_parts:
         messages.append({"role": "system", "content": "\n".join(state_parts)})

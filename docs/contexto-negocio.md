@@ -185,8 +185,6 @@ Campos obligatorios (mínimos para crear la solicitud):
 - `clinic_name` o `tax_id` — identificación del cliente
 - `pickup_address` — dirección de recogida
 - `exam_type` — tipo de análisis (puede ser general al inicio)
-- `priority` — normal / urgente (default: normal)
-
 Campos opcionales pero deseables:
 - `time_window` — franja horaria preferida
 - `patient_name` — nombre de la mascota/paciente
@@ -290,9 +288,7 @@ En lugar de 14 campos obligatorios, usar solo los que realmente se usan:
     "tax_id": null,
     "pickup_address": null,
     "exam_type": null,
-    "priority": "normal | urgent",
-    "patient_name": null,
-    "sample_reference": null
+    "patient_name": null
   },
   "requires_handoff": false,
   "handoff_area": "none | contabilidad | operaciones | tecnico"

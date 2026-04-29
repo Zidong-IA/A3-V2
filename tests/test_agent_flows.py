@@ -18,7 +18,7 @@ def _make_session(phase="fase_1_clasificacion", intent="unknown", client_id=None
     }
 
 
-def _make_ai_response(phase, intent, requires_handoff=False, handoff_area=None, pending=None, priority="normal"):
+def _make_ai_response(phase, intent, requires_handoff=False, handoff_area=None, pending=None):
     return {
         "reply": "respuesta de prueba",
         "intent": intent,
@@ -29,9 +29,7 @@ def _make_ai_response(phase, intent, requires_handoff=False, handoff_area=None, 
             "tax_id": None,
             "pickup_address": "Calle 1",
             "exam_type": "hemograma",
-            "priority": priority,
             "patient_name": None,
-            "sample_reference": None,
             "_pending_intents": pending or [],
         },
         "message_mode": "flow_progress",
@@ -201,11 +199,11 @@ def test_resumed_conversation_no_greeting():
         assert "Hola" in history_passed[0]["content"]
 
 
-# ── Test 11: solicitud urgente → priority=urgent en el request ────────────────
+# ── Test 11: toda solicitud de ruta → priority siempre "normal" en el request ──
 
-def test_urgent_request_priority():
+def test_request_priority_always_normal():
     session = _make_session(client_id="client-uuid-5")
-    ai_resp = _make_ai_response("fase_6_cierre", "route_scheduling", priority="urgent")
+    ai_resp = _make_ai_response("fase_6_cierre", "route_scheduling")
 
     courier = {"id": "courier-uuid-5", "name": "Pedro"}
 
@@ -219,8 +217,8 @@ def test_urgent_request_priority():
          patch("app.services.db.create_request", return_value="req-uuid-5") as mock_create:
 
         from app.agent import process_turn
-        process_turn("test-chat-1", "Necesito una ruta urgente")
+        process_turn("test-chat-1", "Necesito una ruta")
 
         mock_create.assert_called_once()
         call_args = mock_create.call_args[0]
-        assert call_args[2]["captured_fields"]["priority"] == "urgent"
+        assert call_args[2].get("captured_fields", {}).get("priority") != "urgent"

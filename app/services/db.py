@@ -1,3 +1,4 @@
+import re
 from datetime import datetime, timezone
 from supabase import create_client, Client
 from app.config import SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
@@ -25,6 +26,9 @@ def get_or_create_session(chat_id: str) -> dict:
     return new_session
 
 
+_VALID_HANDOFF_AREAS = {"contabilidad", "operaciones", "tecnico", "recepcion"}
+
+
 def update_session(chat_id: str, ai_response: dict) -> None:
     update_data = {
         "phase_current":    ai_response["phase"],
@@ -35,8 +39,9 @@ def update_session(chat_id: str, ai_response: dict) -> None:
         "last_bot_message": ai_response["reply"],
         "ai_confidence":    ai_response.get("confidence"),
     }
-    if ai_response["handoff_area"] is not None:
-        update_data["handoff_area"] = ai_response["handoff_area"]
+    handoff = ai_response["handoff_area"]
+    if handoff is not None and handoff in _VALID_HANDOFF_AREAS:
+        update_data["handoff_area"] = handoff
     _client.table("telegram_sessions").update(update_data).eq("external_chat_id", chat_id).execute()
 
 
@@ -68,11 +73,21 @@ def save_message(chat_id: str, content: str, role: str) -> None:
 
 # ── Client identification ─────────────────────────────────────────────────────
 
+def _normalize_nit(nit: str) -> str:
+    return re.sub(r"[^0-9]", "", nit)
+
+
 def identify_client(name: str = None, tax_id: str = None) -> dict | None:
     if tax_id:
-        result = _client.table("clients").select("*").eq("tax_id", tax_id).eq("is_active", True).execute()
-        if result.data:
-            return result.data[0]
+        clean = _normalize_nit(tax_id)
+        # Intentar con NIT completo y sin dígito de verificación
+        candidates = [clean]
+        if len(clean) > 9:
+            candidates.append(clean[:-1])
+        for nit in candidates:
+            result = _client.table("clients").select("*").eq("tax_id", nit).eq("is_active", True).execute()
+            if result.data:
+                return result.data[0]
     if name:
         result = (
             _client.table("clients")
@@ -84,6 +99,61 @@ def identify_client(name: str = None, tax_id: str = None) -> dict | None:
         if result.data:
             return result.data[0]
     return None
+
+
+def get_catalog_context(species: str | None = None) -> str:
+    """Returns a compact catalog string for AI context injection."""
+    query = _client.table("catalog_profiles").select("code, name, category, price").eq("is_active", True)
+    if species and species.lower() in ("canino", "felino"):
+        query = query.in_("species", [species.lower(), "ambos"])
+    rows = query.order("code").execute().data
+    if not rows:
+        return ""
+
+    from collections import defaultdict
+    by_cat: dict[str, list[str]] = defaultdict(list)
+    for r in rows:
+        by_cat[r["category"]].append(f"{r['code']}-{r['name']} ${r['price']//1000}k")
+
+    label = f" ({species})" if species else ""
+    lines = [f"Catálogo A3{label}:"]
+    for cat, items in by_cat.items():
+        lines.append(f"[{cat}] " + ", ".join(items))
+    return "\n".join(lines)
+
+
+def get_individual_tests_context(species: str | None = None) -> str:
+    """Compact catalog of individual tests for AI context (custom profile flow)."""
+    query = _client.table("catalog_tests").select("code, name, category, price").eq("is_active", True)
+    if species and species.lower() in ("canino", "felino"):
+        query = query.in_("species", [species.lower(), "ambos"])
+    rows = query.order("code").execute().data
+    if not rows:
+        return ""
+
+    from collections import defaultdict
+    by_cat: dict[str, list[str]] = defaultdict(list)
+    for r in rows:
+        by_cat[r["category"]].append(f"{r['code']}-{r['name']} ${r['price']//1000}k")
+
+    label = f" ({species})" if species else ""
+    lines = [f"Análisis individuales A3{label}:"]
+    for cat, items in by_cat.items():
+        lines.append(f"[{cat}] " + ", ".join(items))
+    return "\n".join(lines)
+
+
+def get_tests_by_codes(codes: list[str]) -> list[dict]:
+    if not codes:
+        return []
+    result = (
+        _client.table("catalog_tests")
+        .select("code, name, price")
+        .in_("code", codes)
+        .eq("is_active", True)
+        .execute()
+    )
+    return result.data or []
 
 
 def get_courier_for_client(client_id: str) -> dict | None:
@@ -111,10 +181,13 @@ def create_request(chat_id: str, session: dict, ai_response: dict) -> str | None
         "entry_channel":       "telegram",
         "service_area":        INTENT_TO_SERVICE_AREA.get(intent, "unknown"),
         "intent":              intent,
-        "priority":            fields.get("priority", "normal"),
+        "priority":            "normal",
         "status":              "received",
         "exam_type":           fields.get("exam_type"),
         "patient_name":        fields.get("patient_name"),
+        "species":             fields.get("species"),
+        "patient_age":         fields.get("patient_age"),
+        "owner_name":          fields.get("owner_name"),
         "pickup_address":      fields.get("pickup_address"),
         "requested_at":        now.isoformat(),
         "fallback_reason":     None,
@@ -133,7 +206,7 @@ def create_request(chat_id: str, session: dict, ai_response: dict) -> str | None
             request_data["fallback_reason"] = "no_courier_assigned"
 
     elif intent in ("accounting", "new_client"):
-        request_data["status"] = "escalated"
+        request_data["status"] = "received"
         request_data["fallback_reason"] = ai_response.get("handoff_area")
 
     result = _client.table("requests").insert(request_data).execute()
@@ -148,7 +221,7 @@ def create_request(chat_id: str, session: dict, ai_response: dict) -> str | None
             "source":   "telegram",
             "chat_id":  chat_id,
             "intent":   intent,
-            "priority": fields.get("priority", "normal"),
+            "priority": "normal",
         },
     }).execute()
 

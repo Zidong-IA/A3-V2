@@ -48,12 +48,10 @@ El agente maneja 4 intenciones principales:
 
 **Objetivo:** Registrar una solicitud de recogida de muestras.
 
-**Datos a recolectar (en orden de prioridad):**
+**Datos a recolectar:**
 1. Identificación del cliente: NIF o nombre fiscal de la clínica (para buscarlo en BD)
 2. Tipo de examen / análisis solicitado
 3. Dirección de recogida (puede ser la registrada o una diferente hoy)
-4. Prioridad: normal o urgente
-5. Ventana horaria preferida (si la tiene)
 
 **Reglas operativas:**
 - Si el cliente ya está identificado en BD, no volver a pedir datos ya conocidos
@@ -204,9 +202,7 @@ Usuario: Hemograma y perfil renal de un canino
 Agente:  ¿La dirección de recogida es la de siempre o es diferente hoy?
 Usuario: La misma
 Agente:  Listo. Registro para San Marcos: hemograma + perfil renal canino, recogida hoy.
-         ¿Es prioridad normal o urgente?
-Usuario: Normal está bien
-Agente:  Quedó registrado. Te confirmamos cuando el motorizado salga.
+         Quedó registrado. Te confirmamos cuando el motorizado salga.
 ```
 
 ### 5.2 Consulta de resultados
@@ -433,9 +429,8 @@ en un mensaje, capturarlos todos y avanzar al estado que corresponda.
 
 ## Datos a capturar por flujo
 
-route_scheduling (en orden de prioridad):
-  clinic_name o tax_id (obligatorio primero), exam_type, pickup_address, priority,
-  requested_time_window
+route_scheduling:
+  clinic_name o tax_id (obligatorio primero), exam_type, pickup_address
 
 results:
   sample_reference (número) O patient_name + clinic_name
@@ -591,10 +586,7 @@ CUTOFF_MINUTE=30
   "phase_current": "fase_X_nombre",
   "exam_type": "tipo de análisis",
   "patient_name": "nombre del paciente/mascota",
-  "sample_reference": "número de muestra u orden",
   "pickup_address": "dirección de recogida",
-  "priority": "normal|urgent",
-  "requested_time_window": "franja horaria preferida",
   "requires_handoff": false,
   "handoff_area": "contabilidad|operaciones|tecnico|null",
   "pending_intents": [],

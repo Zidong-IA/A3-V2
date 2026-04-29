@@ -1,0 +1,204 @@
+-- Ejecutar en el SQL Editor de Supabase después de 003_catalog_tests.sql
+-- Catálogo de análisis INDIVIDUALES — datos reales del catálogo 2025
+-- Fuente: PDF "A3 - Catalogo 2025" páginas 3-9
+
+INSERT INTO catalog_tests (code, name, category, species, sample, price) VALUES
+
+-- ── HEMATOLOGÍA ───────────────────────────────────────────────────────────────
+('1101', 'Cuadro Hemático Completo',                'Hematología', 'ambos', 'Tubo Tapa Morada', 14000),
+('1102', 'Prueba Cruzada de Coombs',                'Hematología', 'ambos', 'Tubos Tapa Morada y Tapa Roja', 28000),
+('1109', 'Prueba de Coombs',                        'Hematología', 'ambos', 'Tubos Tapa Morada y Tapa Roja', 28000),
+('1103', 'Recuento de Plaquetas',                   'Hematología', 'ambos', 'Tubo Tapa Morada', 7000),
+('1104', 'Recuento de Reticulocitos',               'Hematología', 'ambos', 'Tubo Tapa Morada', 8000),
+('1105', 'Hemoparásitos',                           'Hematología', 'ambos', 'Tubo Tapa Morada', 10000),
+('1106', 'Hemoglobina y Hematocrito',               'Hematología', 'ambos', 'Tubo Tapa Morada', 8000),
+('1107', 'Células L.E. (Manual)',                   'Hematología', 'ambos', 'Tubo Rojo', 22000),
+('1108', 'Hemocitología (Registro Fotográfico)',    'Hematología', 'ambos', 'Tubo Tapa Morada', 18000),
+('2225', 'Suero Autólogo',                          'Hematología', 'ambos', 'Tubo Tapa Morada o Amarillo', 8000),
+
+-- ── COAGULACIÓN ───────────────────────────────────────────────────────────────
+('1201', 'PT (Tiempo de Protrombina)',              'Coagulación', 'ambos', 'Tubo Tapa Azul con 3/4 de sangre', 18000),
+('1202', 'PTT (Tiempo parcial de Tromboplastina)',  'Coagulación', 'ambos', 'Tubo Tapa Azul con 3/4 de sangre', 18000),
+('1203', 'Dímero D - Vcheck',                       'Coagulación', 'ambos', 'Tubo Tapa Azul con 3/4 de sangre', 65000),
+('1204', 'Panel Test de Coagulación (PT, PTT, APTT, Fibrinógeno)', 'Coagulación', 'ambos', 'Tubo Tapa Azul con 3/4 de sangre', 74000),
+('1205', 'PT y PTT',                                'Coagulación', 'ambos', 'Tubo Tapa Azul con 3/4 de sangre', 33000),
+
+-- ── QUÍMICA SANGUÍNEA ─────────────────────────────────────────────────────────
+('1301', 'Ácido Úrico',                              'Química', 'ambos', 'Tubo Rojo o Amarillo', 20000),
+('1302', 'ALT (GPT) - Alanino Aminotransferasa',     'Química', 'ambos', 'Tubo Rojo o Amarillo', 12000),
+('1303', 'AST (GOT) - Aspartato Aminotransferasa',   'Química', 'ambos', 'Tubo Rojo o Amarillo', 12000),
+('1304', 'Albúmina',                                  'Química', 'ambos', 'Tubo Rojo o Amarillo', 12000),
+('1305', 'Amilasa',                                   'Química', 'ambos', 'Tubo Rojo o Amarillo', 12000),
+('1306', 'Bilirrubina Total',                         'Química', 'ambos', 'Tubo Rojo o Amarillo', 12000),
+('1307', 'Bilirrubinas Diferenciadas',                'Química', 'ambos', 'Tubo Rojo o Amarillo', 15000),
+('1308', 'Colesterol Total (Ayunas)',                 'Química', 'ambos', 'Tubo Rojo o Amarillo', 12000),
+('1309', 'Creatinina',                                'Química', 'ambos', 'Tubo Rojo o Amarillo', 12000),
+('1310', 'Creatina Quinasa Fracción MB (CK)',         'Química', 'ambos', 'Tubo Rojo o Amarillo', 16000),
+('1311', 'Creatina Quinasa NAC (CK)',                 'Química', 'ambos', 'Tubo Rojo o Amarillo', 14000),
+('1312', 'Deshidrogenasa Láctica (LDH)',              'Química', 'ambos', 'Tubo Rojo o Amarillo', 14000),
+('1313', 'Fosfatasa Alcalina',                        'Química', 'ambos', 'Tubo Rojo o Amarillo', 12000),
+('1314', 'Fructosamina',                              'Química', 'ambos', 'Tubo Rojo o Amarillo', 15000),
+('1315', 'GGT (Gama Glutamil Transpeptidasa)',        'Química', 'ambos', 'Tubo Rojo o Amarillo', 12000),
+('1316', 'Glucosa (Ayunas)',                          'Química', 'ambos', 'Tubo Rojo o Amarillo', 12000),
+('1317', 'Glucosa Pre y Pos',                         'Química', 'ambos', 'Tubo Rojo o Amarillo', 20000),
+('1318', 'Lipasa Cuantitativa',                       'Química', 'ambos', 'Tubo Rojo o Amarillo', 21000),
+('1319', 'Triglicéridos',                             'Química', 'ambos', 'Tubo Rojo o Amarillo', 12000),
+('1320', 'Urea Sanguínea',                            'Química', 'ambos', 'Tubo Rojo o Amarillo', 12000),
+('1321', 'Nitrógeno Ureico (BUN)',                    'Química', 'ambos', 'Tubo Rojo o Amarillo', 12000),
+('1322', 'Proteínas Totales',                         'Química', 'ambos', 'Tubo Rojo o Amarillo', 8000),
+('1323', 'Proteínas Diferenciadas (Albúminas + Globulinas)', 'Química', 'ambos', 'Tubo Rojo o Amarillo', 17000),
+('1324', 'Amonio',                                    'Química', 'ambos', 'Tubo Tapa Lila', 42000),
+('1325', 'Colesterol HDL (Ayunas)',                   'Química', 'ambos', 'Tubo Rojo o Amarillo', 18000),
+('1326', 'Colesterol LDL (Ayunas)',                   'Química', 'ambos', 'Tubo Rojo o Amarillo', 18000),
+('1327', 'Colinesterasa',                             'Química', 'ambos', 'Tubo Rojo o Amarillo', 22000),
+('2202', 'Ácidos Biliares',                           'Química', 'ambos', 'Tubo Rojo o Amarillo', 44000),
+('2203', 'Ácidos Biliares Pre y Pos',                 'Química', 'ambos', 'Tubo Rojo o Amarillo', 85000),
+('1328', 'Lipasa Pancreática Felina - Vcheck',        'Química', 'felino', 'Tubo Rojo o Amarillo', 64000),
+('1329', 'Lipasa Pancreática Canina - Vcheck',        'Química', 'canino', 'Tubo Rojo o Amarillo', 62000),
+
+-- ── MINERALES ─────────────────────────────────────────────────────────────────
+('1401', 'Calcio Total',  'Minerales', 'ambos', 'Tubo Rojo o Amarillo', 12000),
+('1402', 'Fósforo',       'Minerales', 'ambos', 'Tubo Rojo o Amarillo', 12000),
+('1403', 'Magnesio',      'Minerales', 'ambos', 'Tubo Rojo o Amarillo', 12000),
+('1404', 'Potasio',       'Minerales', 'ambos', 'Tubo Rojo o Amarillo', 12000),
+('1405', 'Sodio',         'Minerales', 'ambos', 'Tubo Rojo o Amarillo', 12000),
+('1406', 'Cloro',         'Minerales', 'ambos', 'Tubo Rojo o Amarillo', 12000),
+('1407', 'Electrolitos (Ca, Cl, K, Mg, Na, P, tCO2)', 'Minerales', 'ambos', 'Tubo Rojo', 90000),
+('1408', 'Gases sanguíneos Plus',                     'Minerales', 'ambos', 'Tubo Rojo', 90000),
+
+-- ── HORMONAS ──────────────────────────────────────────────────────────────────
+('1501', 'T3 Total',                          'Hormonas', 'ambos',  'Tubo Rojo o Amarillo', 36000),
+('1502', 'T4 Total',                          'Hormonas', 'ambos',  'Tubo Rojo o Amarillo', 36000),
+('1503', 'T4 Total Canino',                   'Hormonas', 'canino', 'Tubo Rojo o Amarillo', 35000),
+('1504', 'TSH',                               'Hormonas', 'ambos',  'Tubo Rojo o Amarillo', 33000),
+('1505', 'Cortisol',                          'Hormonas', 'ambos',  'Tubo Rojo o Amarillo', 36000),
+('1506', 'Cortisol (3 muestras)',             'Hormonas', 'ambos',  'Tubo Rojo o Amarillo', 95000),
+('1521', 'Cortisol (Pre y Post)',             'Hormonas', 'ambos',  'Tubo Rojo o Amarillo', 60000),
+('1507', 'Cortisol en Orina',                 'Hormonas', 'ambos',  'Tubo Rojo y Orina Fresca', 33000),
+('1508', 'Estradiol',                         'Hormonas', 'ambos',  'Tubo Rojo o Amarillo', 35000),
+('1509', 'Progesterona',                      'Hormonas', 'ambos',  'Tubo Rojo o Amarillo', 38000),
+('1510', 'Insulina',                          'Hormonas', 'ambos',  'Tubo Rojo o Amarillo', 36000),
+('1511', 'Insulina / Glucosa',                'Hormonas', 'ambos',  'Tubo Rojo o Amarillo', 43000),
+('1512', 'Testosterona',                      'Hormonas', 'ambos',  'Tubo Rojo o Amarillo', 45000),
+('1513', 'Progesterona Canina Vcheck',        'Hormonas', 'canino', 'Tubo Rojo o Amarillo', 64000),
+('1514', 'Cortisol Canina Vcheck',            'Hormonas', 'canino', 'Tubo Rojo o Amarillo', 64000),
+('1515', 'T4 Total Felina Vcheck',            'Hormonas', 'felino', 'Tubo Rojo o Amarillo', 64000),
+('1516', 'T4 Total Canina Vcheck',            'Hormonas', 'canino', 'Tubo Rojo o Amarillo', 64000),
+('1517', 'TSH Canina Vcheck',                 'Hormonas', 'canino', 'Tubo Rojo o Amarillo', 64000),
+('1518', 'Cortisol Canina (3 muestras) Vcheck','Hormonas','canino', 'Tubo Rojo o Amarillo', 180000),
+
+-- ── UROANÁLISIS ───────────────────────────────────────────────────────────────
+('1601', 'Parcial de Orina (14 parámetros)',          'Uroanálisis', 'ambos', 'Orina Fresca', 16000),
+('1602', 'Lectura Sedimento Urinario',                'Uroanálisis', 'ambos', 'Orina Fresca', 7000),
+('1604', 'Parcial de Orina y Tinción de Wright',      'Uroanálisis', 'ambos', 'Orina Fresca', 22000),
+('1605', 'Parcial de Orina y Tinción de Gram',        'Uroanálisis', 'ambos', 'Orina Fresca', 22000),
+('1606', 'Parcial de Orina + Tinción Gram y Wright',  'Uroanálisis', 'ambos', 'Orina Fresca', 30000),
+('1603', 'Estudio de Cálculo',                        'Uroanálisis', 'ambos', 'Cálculo', 83000),
+
+-- ── PARASITOLOGÍA ─────────────────────────────────────────────────────────────
+('1701', 'Coprológico',              'Parasitología', 'ambos', 'Materia Fecal', 12000),
+('1702', 'Coproscópico',             'Parasitología', 'ambos', 'Materia Fecal', 15000),
+('1703', 'Tripsina en Materia Fecal','Parasitología', 'ambos', 'Materia Fecal', 13000),
+('1704', 'Sangre Oculta',            'Parasitología', 'ambos', 'Materia Fecal', 7000),
+('1705', 'Coproscópico con flotación','Parasitología','ambos', 'Materia Fecal', 20000),
+
+-- ── DERMATOLOGÍA ──────────────────────────────────────────────────────────────
+('1801', 'Raspado de Piel y Pelos',                       'Dermatología', 'ambos', 'Piel y Pelos', 10000),
+('1802', 'Raspado de Piel y Pelos (Tinción Gram y Wright)','Dermatología','ambos', 'Piel y Pelos', 15000),
+('1803', 'Identificación de Ácaro',                       'Dermatología', 'ambos', 'Ácaro en pelos o cinta', 7000),
+('1804', 'Identificación de Ectoparásito Macroscópico',   'Dermatología', 'ambos', 'Ectoparásito en alcohol', 7000),
+
+-- ── CITOLOGÍA ─────────────────────────────────────────────────────────────────
+('1901', 'Citología Vaginal',                  'Citología', 'ambos',  '2 láminas', 15000),
+('1902', 'Citología Malassezia y Oído',        'Citología', 'ambos',  '2 láminas', 15000),
+('1904', 'Citología Líquido Ascítico, Pleura', 'Citología', 'ambos',  '', 30000),
+('1908', 'Citología TVT',                       'Citología', 'ambos',  '2 láminas', 15000),
+('1909', 'Citología Piel',                      'Citología', 'ambos',  '2 láminas', 15000),
+('1910', 'Espermograma Básico',                 'Citología', 'ambos',  '', 44000),
+('1911', 'Citología para Chlamydia - Ojo',      'Citología', 'felino', '2 láminas', 15000),
+('1912', 'Citología Nasal',                     'Citología', 'ambos',  '2 láminas', 15000),
+
+-- ── LÍQUIDOS ──────────────────────────────────────────────────────────────────
+('1905', 'Líquido Cefalorraquídeo',     'Líquidos', 'ambos', 'Tubo Tapa Lila y Tubo Rojo', 52000),
+('1906', 'Líquido Ascítico, Pleural',   'Líquidos', 'ambos', 'Tubo Tapa Lila y Tubo Rojo', 52000),
+('1907', 'Líquido Sinovial',            'Líquidos', 'ambos', 'Tubo Tapa Lila y Tubo Rojo', 52000),
+
+-- ── INMUNOLÓGICOS PERROS ──────────────────────────────────────────────────────
+('2001', 'Brucella Canis (Anticuerpos)',                   'Inmunológico', 'canino', 'Tubo Rojo o Amarillo', 49000),
+('2002', 'Coronavirus Canino (Antígeno)',                  'Inmunológico', 'canino', 'Materia Fecal', 47000),
+('2003', 'Dirofilaria Immitis (Antígeno)',                 'Inmunológico', 'canino', 'Tubo Rojo o Amarillo', 45000),
+('2004', 'Distemper Canino (Antígeno)',                    'Inmunológico', 'canino', 'Secreciones / Tubo Tapa Morada', 45000),
+('2005', 'Parvovirus Canino (Antígeno)',                   'Inmunológico', 'canino', 'Materia Fecal', 36000),
+('2008', 'Ehrlichia Canis (Anticuerpo)',                   'Inmunológico', 'canino', 'Tubo Rojo o Amarillo', 49000),
+('2009', 'Snap 4DX (Anaplasma, Ehrlichia, Borrelia, Dirofilaria)', 'Inmunológico', 'canino', 'Tubo Rojo o Amarillo', 135000),
+('2012', 'Parvovirus + Coronavirus + Giardia (Antígeno)',  'Inmunológico', 'canino', 'Materia Fecal', 82000),
+('2013', 'Ehrlichia canis y Anaplasma (Anticuerpos)',      'Inmunológico', 'canino', 'Tubo Rojo o Amarillo', 77000),
+('2014', 'Leishmania (Anticuerpo)',                        'Inmunológico', 'canino', 'Tubo Rojo o Amarillo', 70000),
+('2015', 'Parvovirus y Coronavirus Canino (Antígeno)',     'Inmunológico', 'canino', 'Materia Fecal', 58000),
+('2016', 'Preñez (Relaxina) Canina',                       'Inmunológico', 'canino', 'Tubo Tapa Morada/Rojo/Amarillo', 60000),
+('2017', 'Distemper Canino + Adenovirus (Antígeno)',       'Inmunológico', 'canino', 'Secreciones', 70000),
+('2018', 'Coronavirus Canino Vcheck',                      'Inmunológico', 'canino', 'Materia Fecal', 61000),
+('2019', 'Parvovirus Canino Vcheck',                       'Inmunológico', 'canino', 'Materia Fecal', 50000),
+('2020', 'Distemper Canino Vcheck (Anticuerpo)',           'Inmunológico', 'canino', 'Tubo Rojo o Amarillo', 61000),
+('2021', 'Parvovirus Canino Vcheck (Anticuerpo)',          'Inmunológico', 'canino', 'Tubo Rojo o Amarillo', 61000),
+('2022', 'Adenovirus-1 Canino Vcheck (Anticuerpo)',        'Inmunológico', 'canino', 'Tubo Rojo o Amarillo', 61000),
+('2023', 'Distemper Canino Vcheck (Antígeno)',             'Inmunológico', 'canino', 'Secreciones', 61000),
+('2024', 'Parvovirus + Coronavirus Vcheck',                'Inmunológico', 'canino', 'Materia Fecal', 70000),
+
+-- ── INMUNOLÓGICOS GATOS ───────────────────────────────────────────────────────
+('2052', 'Snap Triple Felina (FeLV, FIV y Dirofilaria)',  'Inmunológico', 'felino', 'Tubo Rojo o Amarillo', 130000),
+('2053', 'FIV (Anticuerpos) y FeLV (Antígeno)',           'Inmunológico', 'felino', 'Tubo Rojo o Amarillo', 58000),
+('2054', 'Coronavirus Felino, PIF (Anticuerpo) Inmunocomb','Inmunológico','felino', 'Tubo Rojo o Amarillo', 105000),
+('2055', 'Toxoplasma Gondii (Anticuerpo)',                'Inmunológico', 'felino', 'Tubo Rojo o Amarillo', 55000),
+('2056', 'Preñez (Relaxina) Felina',                      'Inmunológico', 'felino', 'Tubo Rojo o Amarillo', 60000),
+('2057', 'Panleucopenia Felina (Antígeno)',               'Inmunológico', 'felino', 'Materia Fecal', 55000),
+('2061', 'Calicivirus Felino (CVF) Antígeno',             'Inmunológico', 'felino', 'Saliva o secreción nasal', 54000),
+('2062', 'Toxoplasma IgG y IgM (Anticuerpo)',             'Inmunológico', 'felino', 'Tubo Tapa Morada/Rojo/Amarillo', 62000),
+('2063', 'Coronavirus Felino, PIF (Antígeno y Anticuerpo)','Inmunológico','felino', 'Materia Fecal y Tubo Rojo', 83000),
+('2064', 'Herpesvirus Felino Vcheck (Anticuerpo)',        'Inmunológico', 'felino', 'Tubo Rojo o Amarillo', 61000),
+('2065', 'Panleucopenia Vcheck (Anticuerpo)',             'Inmunológico', 'felino', 'Tubo Rojo o Amarillo', 61000),
+('2066', 'Calicivirus Vcheck (Anticuerpo)',               'Inmunológico', 'felino', 'Tubo Rojo o Amarillo', 61000),
+('2067', 'Panleucopenia Vcheck (Antígeno)',               'Inmunológico', 'felino', 'Materia Fecal', 63000),
+
+-- ── MICROBIOLOGÍA ─────────────────────────────────────────────────────────────
+('2101', 'Cultivo y Antibiograma de Secreciones',     'Microbiología', 'ambos', 'Medio de transporte', 80000),
+('2102', 'Urocultivo y Antibiograma',                 'Microbiología', 'ambos', 'Orina Fresca y Estéril', 80000),
+('2103', 'Hemocultivo y Antibiograma',                'Microbiología', 'ambos', 'Tubo Tapa Azul', 80000),
+('2104', 'Coprocultivo y Antibiograma',               'Microbiología', 'ambos', 'Materia Fecal', 80000),
+('2105', 'Cultivo y Antibiograma Piel',               'Microbiología', 'ambos', 'Pelos en frasco estéril', 45000),
+('2106', 'Cultivo de Hongos',                         'Microbiología', 'ambos', '', 55000),
+('2107', 'Coloración de Gram (Microorganismos)',      'Microbiología', 'ambos', 'Lámina con secreción', 12000),
+('2108', 'Antibiograma Adicional',                    'Microbiología', 'ambos', '', 28000),
+('2109', 'Cultivo y Antifungigrama de Hongos y Levaduras','Microbiología','ambos', '', 70000),
+('2110', 'Cultivo de Bacterias (Aislamiento)',        'Microbiología', 'ambos', '', 35000),
+
+-- ── OTROS ─────────────────────────────────────────────────────────────────────
+('2201', 'Fenobarbital',                       'Otros', 'ambos',  'Tubo Rojo o Amarillo', 60000),
+('2204', 'Tripsina Inmunorreactiva',           'Otros', 'canino', 'Tubo Rojo o Amarillo', 84000),
+('2218', 'Vitamina B12 (Cianocobalamina)',     'Otros', 'ambos',  'Tubo Rojo o Amarillo', 60000),
+('2219', 'Ácido Fólico',                        'Otros', 'ambos',  'Tubo Rojo o Amarillo', 60000),
+
+-- ── PRUEBAS ESPECÍFICAS VCHECK ────────────────────────────────────────────────
+('2205', 'Hemoglobina Glicosilada',                  'Específicas', 'ambos',  'Tubo Tapa Morada', 65000),
+('2206', 'Proteína C Reactiva (Aglutinación)',       'Específicas', 'ambos',  'Tubo Rojo o Amarillo', 30000),
+('2207', 'Test Troponina I Cuantitativa Vcheck',     'Específicas', 'ambos',  'Tubo Rojo o Amarillo', 72000),
+('2208', 'SDMA Vcheck',                              'Específicas', 'ambos',  'Tubo Rojo o Amarillo', 159000),
+('2209', 'Proteína C Reactiva Vcheck',               'Específicas', 'ambos',  'Tubo Rojo o Amarillo', 58000),
+('2210', 'Amiloide Sérico A Felino Vcheck',          'Específicas', 'felino', 'Tubo Rojo o Amarillo', 63000),
+('2211', 'NT-ProBNP Canino (Enfermedad Cardiaca)',   'Específicas', 'canino', 'Tubo Rojo o Amarillo', 90000),
+('2212', 'NT-ProBNP Felino (Enfermedad Cardiaca)',   'Específicas', 'felino', 'Tubo Rojo o Amarillo', 83000),
+
+-- ── TIPIFICACIÓN SANGUÍNEA / COMPATIBILIDAD ───────────────────────────────────
+('2213', 'Hemoclasificación Canine DEA1',            'Tipificación', 'canino', 'Tubo Lila', 150000),
+('2214', 'Hemoclasificación Feline A+B',             'Tipificación', 'felino', 'Tubo Lila', 150000),
+('2215', 'DAT Canine (Anemia Hemolítica)',           'Tipificación', 'canino', 'Tubo Lila', 198000),
+('2216', 'LabTest XM Canine (Crossmatch)',           'Tipificación', 'canino', 'Tubo Lila', 227000),
+('2217', 'LabTest XM Feline (Crossmatch)',           'Tipificación', 'felino', 'Tubo Lila', 227000)
+
+ON CONFLICT (code) DO UPDATE SET
+    name      = EXCLUDED.name,
+    category  = EXCLUDED.category,
+    species   = EXCLUDED.species,
+    sample    = EXCLUDED.sample,
+    price     = EXCLUDED.price,
+    is_active = EXCLUDED.is_active;

@@ -17,7 +17,43 @@ _ninguna_
 - [ ] Test 8: conversación interrumpida y retomada → sin saludo, continúa donde estaba
 - [ ] Test 9: gestión de pagos → derivación inmediata a contabilidad
 - [ ] Test 10: alta de cliente nuevo → derivación inmediata a operaciones
-- [ ] Test 11: solicitud urgente → visible en filtros y logs de eventos
+- [ ] Test 11: toda solicitud de ruta → priority siempre "normal" en BD (no se pregunta al usuario)
+
+## Implementación de Modificaciones Cliente (V2.1)
+
+Basadas en dos charlas con cliente. Ver `CHATBOT_MODIFICATIONS.md` para detalles.
+
+### Fase 1 — Cambios al Prompt y Schema
+- [ ] Sistema de preguntas conversacionales (no formulario)
+- [ ] Búsqueda progresiva de cliente (NIT → nombre → escalada)
+- [ ] Manejo de formas de pago (contado vs contraentrega)
+- [ ] Crear tu perfil (combos personalizados)
+- [ ] Chat permanece abierto tras confirmación
+
+### Fase 2 — Lógica del Agente
+- [ ] Identificación progresiva de cliente en `process_turn()`
+- [ ] Recolección conversacional de orden (sin formulario)
+- [ ] Cálculo de descuentos automáticos por cantidad
+- [ ] Asignación automática de motorista por zona
+- [ ] Permanencia del chat abierto para nuevas solicitudes
+
+### Fase 3 — Integraciones Requeridas
+- [ ] API ANARVET: consulta estado de análisis
+- [ ] API ALEGRA: crear facturas (via backend)
+- [ ] BD de zonas y motoristas: mapeo dirección → motorista
+- [ ] Sistema de notificaciones: Telegram y interna
+
+### Fase 4 — Tests
+- [ ] Búsqueda progresiva: NIT hallado
+- [ ] Búsqueda progresiva: NIT no hallado, nombre hallado
+- [ ] Búsqueda progresiva: cliente nuevo → escalar
+- [ ] Crear tu perfil: seleccionar servicios y calcular descuento
+- [ ] Forma de pago: contado vs contraentrega
+- [ ] Asignación motorista: automática por zona
+- [ ] Chat permanece abierto: múltiples órdenes en misma sesión
+- [ ] Consulta estado: integración ANARVET
+
+---
 
 ## Completado
 

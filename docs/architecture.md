@@ -86,7 +86,7 @@ client_id uuid UNIQUE → clients | courier_id uuid → couriers | assigned_by t
 ```
 id uuid PK | client_id → clients | entry_channel (telegram|liveconnect|manual)
 service_area (route_scheduling|accounting|results|new_client|unknown)
-priority (normal|urgent) | status text | exam_type text | patient_name text
+priority text DEFAULT 'normal' | status text | exam_type text | patient_name text
 pickup_address text | scheduled_pickup_date date | assigned_courier_id → couriers
 fallback_reason text
 ```
@@ -120,7 +120,7 @@ any → cancelled
 ### Programación de ruta (happy path)
 1. Usuario: "necesito un retiro"
 2. Agent identifica `route_scheduling`, fase `collecting`
-3. Recolecta: `clinic_name/tax_id` → `exam_type` → `pickup_address` → `priority`
+3. Recolecta: `clinic_name/tax_id` → `exam_type` → `pickup_address`
 4. Fase `confirming`: muestra resumen, pide confirmación
 5. Fase `done`: crea registro en `requests`, asigna motorizado de `client_courier_assignment`
 6. Informa fecha/franja al usuario

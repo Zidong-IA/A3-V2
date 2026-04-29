@@ -29,17 +29,25 @@ RESPONSE_SCHEMA = {
             "captured_fields": {
                 "type": "object",
                 "properties": {
-                    "clinic_name":        {"anyOf": [{"type": "string"}, {"type": "null"}]},
-                    "tax_id":             {"anyOf": [{"type": "string"}, {"type": "null"}]},
-                    "pickup_address":     {"anyOf": [{"type": "string"}, {"type": "null"}]},
-                    "exam_type":          {"anyOf": [{"type": "string"}, {"type": "null"}]},
-                    "priority":           {"type": "string", "enum": ["normal", "urgent"]},
-                    "patient_name":       {"anyOf": [{"type": "string"}, {"type": "null"}]},
-                    "sample_reference":   {"anyOf": [{"type": "string"}, {"type": "null"}]},
+                    "clinic_name":    {"anyOf": [{"type": "string"}, {"type": "null"}]},
+                    "tax_id":         {"anyOf": [{"type": "string"}, {"type": "null"}]},
+                    "pickup_address": {"anyOf": [{"type": "string"}, {"type": "null"}]},
+                    "exam_type":      {"anyOf": [{"type": "string"}, {"type": "null"}]},
+                    "patient_name":   {"anyOf": [{"type": "string"}, {"type": "null"}]},
+                    "species":        {"anyOf": [{"type": "string"}, {"type": "null"}]},
+                    "patient_age":    {"anyOf": [{"type": "string"}, {"type": "null"}]},
+                    "owner_name":     {"anyOf": [{"type": "string"}, {"type": "null"}]},
+                    "selected_tests": {
+                        "anyOf": [
+                            {"type": "array", "items": {"type": "string"}},
+                            {"type": "null"},
+                        ]
+                    },
                 },
                 "required": [
                     "clinic_name", "tax_id", "pickup_address", "exam_type",
-                    "priority", "patient_name", "sample_reference",
+                    "patient_name", "species", "patient_age", "owner_name",
+                    "selected_tests",
                 ],
                 "additionalProperties": False,
             },
