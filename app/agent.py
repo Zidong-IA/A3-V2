@@ -145,7 +145,7 @@ def process_turn(chat_id: str, user_message: str) -> str:
                     "intent": "new_client",
                     "service_area": "new_client",
                     "requires_handoff": True,
-                    "handoff_area": "recepcion",
+                    "handoff_area": "operaciones",
                     "captured_fields": fields,
                     "confidence": 1.0,
                     "message_mode": "flow_progress",

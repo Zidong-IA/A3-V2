@@ -26,7 +26,7 @@ def get_or_create_session(chat_id: str) -> dict:
     return new_session
 
 
-_VALID_HANDOFF_AREAS = {"contabilidad", "operaciones", "tecnico", "recepcion"}
+_VALID_HANDOFF_AREAS = {"contabilidad", "operaciones", "tecnico"}
 
 
 def update_session(chat_id: str, ai_response: dict) -> None:

@@ -14,7 +14,7 @@ derivar pagos y altas a humanos. No das diagnósticos ni orientación clínica.
 - route_scheduling: programar recogida de muestras → agente resuelve
 - results: consultar estado de muestra o resultados → agente resuelve
 - accounting: gestión de pagos → SIEMPRE derivar (handoff_area=contabilidad)
-- new_client: alta de cliente nuevo → SIEMPRE derivar inmediatamente (handoff_area=recepcion)
+- new_client: alta de cliente nuevo → SIEMPRE derivar inmediatamente (handoff_area=operaciones)
 - unknown: no clasificado → derivar a humano
 
 ## Flujo OBLIGATORIO para route_scheduling
@@ -29,7 +29,7 @@ Si el estado indica CLIENTE NO ENCONTRADO y el campo _asked_if_new_client no est
 El sistema ya habrá preguntado si es cliente nuevo. No repetir esa pregunta.
 
 Si el estado indica CLIENTE NO ENCONTRADO y _asked_if_new_client está activo y el usuario confirma ser nuevo:
-→ Derivar: requires_handoff=true, handoff_area=recepcion, phase=fase_7_escalado.
+→ Derivar: requires_handoff=true, handoff_area=operaciones, phase=fase_7_escalado.
 
 PASO 2 — Confirmar dirección
 "Perfecto, encontramos la veterinaria.

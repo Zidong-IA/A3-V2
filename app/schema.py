@@ -58,7 +58,7 @@ RESPONSE_SCHEMA = {
             "requires_handoff": {"type": "boolean"},
             "handoff_area": {
                 "anyOf": [
-                    {"type": "string", "enum": ["contabilidad", "operaciones", "tecnico", "recepcion"]},
+                    {"type": "string", "enum": ["contabilidad", "operaciones", "tecnico"]},
                     {"type": "null"},
                 ]
             },
