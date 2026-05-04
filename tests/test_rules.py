@@ -57,6 +57,27 @@ class TestCutoffRule:
         result = get_scheduled_pickup_date(now)
         assert result == date(2026, 4, 28)  # martes
 
+    def test_before_cutoff_saturday(self):
+        """Solicitud sábado 10:00 -> recogida lunes."""
+        from app.rules import get_scheduled_pickup_date
+        now = _dt(10, 0, weekday_offset=5)  # sábado
+        result = get_scheduled_pickup_date(now)
+        assert result == date(2026, 5, 4)  # lunes
+
+    def test_after_cutoff_saturday(self):
+        """Solicitud sábado 18:00 -> recogida martes."""
+        from app.rules import get_scheduled_pickup_date
+        now = _dt(18, 0, weekday_offset=5)  # sábado
+        result = get_scheduled_pickup_date(now)
+        assert result == date(2026, 5, 5)  # martes
+
+    def test_before_cutoff_sunday(self):
+        """Solicitud domingo 10:00 -> recogida lunes."""
+        from app.rules import get_scheduled_pickup_date
+        now = _dt(10, 0, weekday_offset=6)  # domingo
+        result = get_scheduled_pickup_date(now)
+        assert result == date(2026, 5, 4)  # lunes
+
 
 # ── Test: INTENT_TO_SERVICE_AREA mapea correctamente ─────────────────────────
 

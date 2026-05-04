@@ -77,14 +77,31 @@ def _normalize_nit(nit: str) -> str:
     return re.sub(r"[^0-9]", "", nit)
 
 
+def _nit_candidates(tax_id: str) -> list[str]:
+    raw = (tax_id or "").strip()
+    clean = _normalize_nit(raw)
+
+    candidates: list[str] = []
+
+    def add(value: str) -> None:
+        if value and value not in candidates:
+            candidates.append(value)
+
+    add(raw)
+    add(clean)
+
+    if len(clean) > 1:
+        base = clean[:-1]
+        dv = clean[-1]
+        add(base)
+        add(f"{base}-{dv}")
+
+    return candidates
+
+
 def identify_client(name: str = None, tax_id: str = None) -> dict | None:
     if tax_id:
-        clean = _normalize_nit(tax_id)
-        # Intentar con NIT completo y sin dígito de verificación
-        candidates = [clean]
-        if len(clean) > 9:
-            candidates.append(clean[:-1])
-        for nit in candidates:
+        for nit in _nit_candidates(tax_id):
             result = _client.table("clients").select("*").eq("tax_id", nit).eq("is_active", True).execute()
             if result.data:
                 return result.data[0]
@@ -222,6 +239,7 @@ def create_request(chat_id: str, session: dict, ai_response: dict) -> str | None
             "chat_id":  chat_id,
             "intent":   intent,
             "priority": "normal",
+            "payment_method": fields.get("payment_method"),
         },
     }).execute()
 

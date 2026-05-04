@@ -1,7 +1,8 @@
 from flask import Flask, request, jsonify, abort
-from app.config import TELEGRAM_WEBHOOK_SECRET, FLASK_SECRET_KEY
+from app.config import TELEGRAM_WEBHOOK_SECRET, FLASK_SECRET_KEY, CHATWOOT_AGENT_BOT_TOKEN
 from app.agent import process_turn
-from app.services import telegram
+from app.services import telegram, chatwoot
+from app.services.db import get_or_create_session
 
 app = Flask(__name__)
 app.secret_key = FLASK_SECRET_KEY
@@ -32,6 +33,37 @@ def telegram_webhook():
         telegram.send_message(chat_id, reply)
     except Exception as e:
         app.logger.error("Error sending message to %s: %s", chat_id, e)
+
+    return jsonify({"ok": True})
+
+
+@app.route("/chatwoot/webhook", methods=["POST"])
+def chatwoot_webhook():
+    data = request.get_json(force=True, silent=True) or {}
+
+    if data.get("event") != "message_created":
+        return jsonify({"ok": True})
+    if data.get("message_type") != "incoming":
+        return jsonify({"ok": True})
+
+    content = data.get("content", "").strip()
+    conversation_id = str((data.get("conversation") or {}).get("id", ""))
+    if not content or not conversation_id:
+        return jsonify({"ok": True})
+
+    try:
+        reply = process_turn(conversation_id, content)
+    except Exception as e:
+        app.logger.error("Error en process_turn chatwoot %s: %s", conversation_id, e, exc_info=True)
+        return jsonify({"ok": True})
+
+    try:
+        chatwoot.send_message(conversation_id, reply)
+        session = get_or_create_session(conversation_id)
+        if session.get("requires_handoff") and session.get("handoff_area"):
+            chatwoot.assign_team(conversation_id, session["handoff_area"])
+    except Exception as e:
+        app.logger.error("Error enviando a chatwoot %s: %s", conversation_id, e, exc_info=True)
 
     return jsonify({"ok": True})
 

@@ -19,3 +19,11 @@ CUTOFF_HOUR, CUTOFF_MINUTE = map(int, os.environ.get("CUTOFF_TIME", "17:30").spl
 
 FLASK_SECRET_KEY = os.environ["FLASK_SECRET_KEY"]
 APP_ENV = os.environ.get("APP_ENV", "production")
+
+CHATWOOT_URL = os.environ.get("CHATWOOT_URL", "").rstrip("/")
+CHATWOOT_ACCOUNT_ID = os.environ.get("CHATWOOT_ACCOUNT_ID", "")
+CHATWOOT_API_TOKEN = os.environ.get("CHATWOOT_API_TOKEN", "")
+CHATWOOT_AGENT_BOT_TOKEN = os.environ.get("CHATWOOT_AGENT_BOT_TOKEN", "")
+CHATWOOT_INBOX_ID = os.environ.get("CHATWOOT_INBOX_ID", "")
+CHATWOOT_TEAM_CONTABILIDAD = os.environ.get("CHATWOOT_TEAM_CONTABILIDAD", "")
+CHATWOOT_TEAM_OPERACIONES = os.environ.get("CHATWOOT_TEAM_OPERACIONES", "")

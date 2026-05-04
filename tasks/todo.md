@@ -1,82 +1,77 @@
 # Tareas — A3 Laboratorio Veterinario V2
 
-## En progreso
+---
 
-_ninguna_
+## Agente Conversacional — Completado
 
-## Pendiente
+### Core (Bloques 1–4)
+- [x] `schema.py` → 10 campos, intents en inglés, 8 fases nombradas, message_mode, pending_intents, confidence
+- [x] `prompt.py` → system prompt limpio, sin JSON embebido
+- [x] `rules.py` → INTENT_TO_SERVICE_AREA + TERMINAL_PHASES
+- [x] `db.py` → get_or_create_session, update_session, create_request alineados con modelo real
+- [x] `agent.py` → pending_intents entre turnos, transición a fase terminal
+- [x] `ai.py` → recibe pending_intents, filtra campos internos
 
-### Tests obligatorios (bootstrap sección 12)
-- [ ] Test 1: cliente con motorizado asignado → solicitud `assigned`
-- [ ] Test 2: cliente sin motorizado → `error_pending_assignment` + evento en `request_events`
-- [ ] Test 3: cliente nuevo → `fase_7_escalado` inmediato, sin recolectar datos
-- [ ] Test 4: solicitud post-17:30 → `scheduled_pickup_date` = siguiente día hábil
-- [ ] Test 5: múltiples intenciones en un mensaje → ambas procesadas en orden correcto
-- [ ] Test 6: usuario repite sin dar dato → agente ofrece opciones en vez de preguntar de nuevo
-- [ ] Test 7: usuario cancela solicitud en curso → cancelación confirmada, flujo limpio
-- [ ] Test 8: conversación interrumpida y retomada → sin saludo, continúa donde estaba
-- [ ] Test 9: gestión de pagos → derivación inmediata a contabilidad
-- [ ] Test 10: alta de cliente nuevo → derivación inmediata a operaciones
-- [ ] Test 11: toda solicitud de ruta → priority siempre "normal" en BD (no se pregunta al usuario)
+### Tests obligatorios — 11/11 ✓
+- [x] Test 1: cliente con motorizado asignado → solicitud `assigned`
+- [x] Test 2: cliente sin motorizado → `error_pending_assignment` + evento en `request_events`
+- [x] Test 3: cliente nuevo → `fase_7_escalado` inmediato, sin recolectar datos
+- [x] Test 4: solicitud post-17:30 → `scheduled_pickup_date` = siguiente día hábil
+- [x] Test 5: múltiples intenciones en un mensaje → ambas procesadas en orden correcto
+- [x] Test 6: usuario repite sin dar dato → agente ofrece opciones en vez de preguntar de nuevo
+- [x] Test 7: usuario cancela solicitud en curso → cancelación confirmada, flujo limpio
+- [x] Test 8: conversación interrumpida y retomada → sin saludo, continúa donde estaba
+- [x] Test 9: gestión de pagos → derivación inmediata a contabilidad
+- [x] Test 10: alta de cliente nuevo → derivación inmediata a operaciones
+- [x] Test 11: toda solicitud de ruta → priority siempre "normal" en BD
 
-## Implementación de Modificaciones Cliente (V2.1)
-
-Basadas en dos charlas con cliente. Ver `CHATBOT_MODIFICATIONS.md` para detalles.
-
-### Fase 1 — Cambios al Prompt y Schema
-- [ ] Sistema de preguntas conversacionales (no formulario)
-- [ ] Búsqueda progresiva de cliente (NIT → nombre → escalada)
-- [ ] Manejo de formas de pago (contado vs contraentrega)
-- [ ] Crear tu perfil (combos personalizados)
-- [ ] Chat permanece abierto tras confirmación
-
-### Fase 2 — Lógica del Agente
-- [ ] Identificación progresiva de cliente en `process_turn()`
-- [ ] Recolección conversacional de orden (sin formulario)
-- [ ] Cálculo de descuentos automáticos por cantidad
-- [ ] Asignación automática de motorista por zona
-- [ ] Permanencia del chat abierto para nuevas solicitudes
-
-### Fase 3 — Integraciones Requeridas
-- [ ] API ANARVET: consulta estado de análisis
-- [ ] API ALEGRA: crear facturas (via backend)
-- [ ] BD de zonas y motoristas: mapeo dirección → motorista
-- [ ] Sistema de notificaciones: Telegram y interna
-
-### Fase 4 — Tests
-- [ ] Búsqueda progresiva: NIT hallado
-- [ ] Búsqueda progresiva: NIT no hallado, nombre hallado
-- [ ] Búsqueda progresiva: cliente nuevo → escalar
-- [ ] Crear tu perfil: seleccionar servicios y calcular descuento
-- [ ] Forma de pago: contado vs contraentrega
-- [ ] Asignación motorista: automática por zona
-- [ ] Chat permanece abierto: múltiples órdenes en misma sesión
-- [ ] Consulta estado: integración ANARVET
+### Modificaciones V2.1 (llamadas con cliente)
+- [x] Preguntas conversacionales, una por turno (no formulario)
+- [x] Búsqueda progresiva de cliente: NIT → nombre → escalada
+- [x] Forma de pago: contado vs contraentrega (PASO 4 del flujo)
+- [x] Recolección conversacional: exam_type → patient_name → species (patient_age/owner_name opcionales)
+- [x] "Crear tu perfil": selected_tests, catálogo individual, cálculo de subtotal/total
+- [x] Chat permanece abierto: solo cierra con despedida explícita del usuario
+- [x] Notificación del motorizado al cerrar orden (`agent.py` → append a reply)
+- [x] Múltiples órdenes en misma sesión: reset de campos de orden al retomar desde fase terminal
 
 ---
 
-## Completado
+## Agente Conversacional — Pendiente
 
-### Bloque 1 — Core del schema y prompt
-- [x] `schema.py` → 10 campos, intents en inglés, 8 fases nombradas, message_mode, pending_intents, confidence
-- [x] `prompt.py` → system prompt limpio (sección 9 del bootstrap), sin JSON embebido
-- [x] `rules.py` → INTENT_TO_SERVICE_AREA con intents en inglés + TERMINAL_PHASES
+### Tests nuevos (V2.1)
+- [ ] Múltiples órdenes en misma sesión: segunda orden con cliente ya identificado
+- [ ] "Crear tu perfil": seleccionar análisis individuales, ver subtotal calculado
+- [ ] Notificación de motorizado: mensaje incluido en cierre de orden
 
-### Bloque 2 — Capa de datos
-- [x] `db.py` → get_or_create_session sin columnas fantasma
-- [x] `db.py` → update_session alineado con modelo real (last_activity, sin columnas inexistentes)
-- [x] `db.py` → create_request usa intents en inglés directamente
+---
 
-### Bloque 3 — Lógica del agente
-- [x] `agent.py` → manejo de pending_intents entre turnos
-- [x] `agent.py` → transición a fase terminal usando TERMINAL_PHASES
-- [x] `ai.py` → recibe pending_intents, filtra campos internos del contexto
+## Plataforma Interna — Pendiente (NO es el agente conversacional)
 
-### Bloque 4 — Infraestructura
-- [x] `.env.example` con todas las variables del bootstrap sección 11
+Estas funciones se implementarán en la plataforma de gestión, no en el chatbot.
+
+- [ ] **Descuentos por cantidad**: `calculate_discount()` en `rules.py` es placeholder (retorna 0). Las reglas de descuento las define el cliente y se configuran desde la plataforma. La BD las persiste; el agente solo las lee.
+- [ ] **Asignación por zonas geográficas**: hoy el agente asigna por `client_courier_assignment` (tabla por cliente). La asignación por zona requiere la tabla de zonas que define el cliente; se gestiona desde la plataforma.
+- [ ] **Integración ANARVET**: consulta de estado de análisis. La plataforma expone el estado; el agente lo consumirá vía endpoint interno cuando esté disponible.
+- [ ] **Integración ALEGRA**: generación de facturas al completar una orden. Se resuelve desde el backend de la plataforma, no desde el agente.
+- [ ] **Gestión de zonas y motoristas**: calendario de repartidores, asignación manual de override, edición de zonas.
+- [ ] **Dashboard y reportes**: órdenes por día, por motorista, por zona, perfiles más solicitados.
+- [ ] **Gestión de clientes**: alta manual, edición de datos, vinculación a zona.
+- [ ] **Gestión de portafolio**: cargar nuevo catálogo, editar precios, definir perfiles predefinidos.
+
+### Información pendiente del cliente (bloquea algunas de las anteriores)
+- [ ] Números de teléfono para escalar contabilidad/pagos y PQRs
+- [ ] Definición de zonas geográficas (número, descripción, motorista asignado)
+- [ ] Tabla de descuentos por cantidad de parámetros
+- [ ] Estructura de perfiles predefinidos en el catálogo
+- [ ] API ANARVET: endpoint, autenticación, datos expuestos
+- [ ] API ALEGRA: endpoint, autenticación, campos requeridos
 
 ---
 
 ## Resultados
 
-**2026-04-27** — Bloques 1-4 completados. Pendiente: 11 tests de la sección 12 del bootstrap.
+**2026-04-27** — Bloques 1-4 completados.
+**2026-04-30** — Tests obligatorios validados: 11/11 completados.
+**2026-05-01** — Flujo de búsqueda progresiva + forma de pago cerrados para V2.1.
+**2026-05-03** — Separación plataforma vs. agente documentada. Notificación de motorizado y múltiples órdenes en sesión implementadas en `agent.py`.

@@ -18,6 +18,12 @@ def _make_session(phase="fase_1_clasificacion", intent="unknown", client_id=None
     }
 
 
+_HISTORY_WITH_CONTEXT = [
+    {"role": "user", "content": "Hola"},
+    {"role": "bot", "content": "Hola, en que te puedo ayudar?"},
+]
+
+
 def _make_ai_response(phase, intent, requires_handoff=False, handoff_area=None, pending=None):
     return {
         "reply": "respuesta de prueba",
@@ -25,11 +31,16 @@ def _make_ai_response(phase, intent, requires_handoff=False, handoff_area=None, 
         "phase": phase,
         "service_area": intent,
         "captured_fields": {
-            "clinic_name": "Clínica Test",
+            "clinic_name": None,
             "tax_id": None,
             "pickup_address": "Calle 1",
             "exam_type": "hemograma",
             "patient_name": None,
+            "species": None,
+            "patient_age": None,
+            "owner_name": None,
+            "payment_method": None,
+            "selected_tests": None,
             "_pending_intents": pending or [],
         },
         "message_mode": "flow_progress",
@@ -50,7 +61,7 @@ def test_request_assigned_when_courier_exists():
     courier = {"id": "courier-uuid-1", "name": "Carlos", "phone": "123", "availability": "available"}
 
     with patch("app.services.db.get_or_create_session", return_value=session), \
-         patch("app.services.db.get_recent_messages", return_value=[]), \
+         patch("app.services.db.get_recent_messages", return_value=_HISTORY_WITH_CONTEXT), \
          patch("app.services.ai.generate_turn", return_value=ai_resp), \
          patch("app.services.db.identify_client", return_value=None), \
          patch("app.services.db.save_message"), \
@@ -73,7 +84,7 @@ def test_request_error_when_no_courier():
     ai_resp = _make_ai_response("fase_6_cierre", "route_scheduling")
 
     with patch("app.services.db.get_or_create_session", return_value=session), \
-         patch("app.services.db.get_recent_messages", return_value=[]), \
+         patch("app.services.db.get_recent_messages", return_value=_HISTORY_WITH_CONTEXT), \
          patch("app.services.ai.generate_turn", return_value=ai_resp), \
          patch("app.services.db.identify_client", return_value=None), \
          patch("app.services.db.save_message"), \
@@ -101,7 +112,7 @@ def test_new_client_escalates_immediately():
     )
 
     with patch("app.services.db.get_or_create_session", return_value=session), \
-         patch("app.services.db.get_recent_messages", return_value=[]), \
+         patch("app.services.db.get_recent_messages", return_value=_HISTORY_WITH_CONTEXT), \
          patch("app.services.ai.generate_turn", return_value=ai_resp), \
          patch("app.services.db.identify_client", return_value=None), \
          patch("app.services.db.save_message"), \
@@ -127,7 +138,7 @@ def test_accounting_escalates_to_contabilidad():
     )
 
     with patch("app.services.db.get_or_create_session", return_value=session), \
-         patch("app.services.db.get_recent_messages", return_value=[]), \
+         patch("app.services.db.get_recent_messages", return_value=_HISTORY_WITH_CONTEXT), \
          patch("app.services.ai.generate_turn", return_value=ai_resp), \
          patch("app.services.db.identify_client", return_value=None), \
          patch("app.services.db.save_message"), \
@@ -157,7 +168,7 @@ def test_pending_intents_saved_to_session():
         captured_in_update.update(response["captured_fields"])
 
     with patch("app.services.db.get_or_create_session", return_value=session), \
-         patch("app.services.db.get_recent_messages", return_value=[]), \
+         patch("app.services.db.get_recent_messages", return_value=_HISTORY_WITH_CONTEXT), \
          patch("app.services.ai.generate_turn", return_value=ai_resp), \
          patch("app.services.db.identify_client", return_value=None), \
          patch("app.services.db.save_message"), \
@@ -183,6 +194,7 @@ def test_resumed_conversation_no_greeting():
 
     with patch("app.services.db.get_or_create_session", return_value=session), \
          patch("app.services.db.get_recent_messages", return_value=history), \
+         patch("app.services.db.get_catalog_context", return_value=""), \
          patch("app.services.ai.generate_turn", return_value=ai_resp) as mock_ai, \
          patch("app.services.db.identify_client", return_value=None), \
          patch("app.services.db.save_message"), \
@@ -208,7 +220,7 @@ def test_request_priority_always_normal():
     courier = {"id": "courier-uuid-5", "name": "Pedro"}
 
     with patch("app.services.db.get_or_create_session", return_value=session), \
-         patch("app.services.db.get_recent_messages", return_value=[]), \
+         patch("app.services.db.get_recent_messages", return_value=_HISTORY_WITH_CONTEXT), \
          patch("app.services.ai.generate_turn", return_value=ai_resp), \
          patch("app.services.db.identify_client", return_value=None), \
          patch("app.services.db.save_message"), \
@@ -222,3 +234,371 @@ def test_request_priority_always_normal():
         mock_create.assert_called_once()
         call_args = mock_create.call_args[0]
         assert call_args[2].get("captured_fields", {}).get("priority") != "urgent"
+
+
+# ── Test adicional: primer turno devuelve bienvenida sin llamar IA ────────────
+
+def test_first_turn_returns_welcome_without_ai_call():
+    session = _make_session()
+
+    with patch("app.services.db.get_or_create_session", return_value=session), \
+         patch("app.services.db.get_recent_messages", return_value=[]), \
+         patch("app.services.ai.generate_turn") as mock_ai, \
+         patch("app.services.db.save_message") as mock_save:
+
+        from app.agent import process_turn
+        reply = process_turn("test-chat-1", "Hola")
+
+        assert "Bienvenido a A3" in reply
+        mock_ai.assert_not_called()
+        assert mock_save.call_count == 2
+
+
+# ── Test adicional: despedida en fase terminal cierra sin llamar IA ───────────
+
+def test_terminal_farewell_skips_ai_and_returns_farewell():
+    session = _make_session(phase="fase_6_cierre")
+
+    with patch("app.services.db.get_or_create_session", return_value=session), \
+         patch("app.services.db.get_recent_messages", return_value=_HISTORY_WITH_CONTEXT), \
+         patch("app.services.ai.generate_turn") as mock_ai, \
+         patch("app.services.db.update_session") as mock_update, \
+         patch("app.services.db.create_request") as mock_create, \
+         patch("app.services.db.save_message") as mock_save:
+
+        from app.agent import process_turn
+        reply = process_turn("test-chat-1", "gracias")
+
+        assert "Hasta luego" in reply
+        mock_ai.assert_not_called()
+        mock_update.assert_not_called()
+        mock_create.assert_not_called()
+        assert mock_save.call_count == 2
+
+
+def test_terminal_message_with_new_query_does_not_trigger_farewell():
+    session = _make_session(phase="fase_7_escalado", intent="new_client", client_id="client-uuid-7")
+    ai_resp = _make_ai_response("fase_7_escalado", "new_client", requires_handoff=True, handoff_area="operaciones")
+    ai_resp["reply"] = "Claro, podés hacer otra consulta. Contame qué perfil te interesa."
+
+    with patch("app.services.db.get_or_create_session", return_value=session), \
+         patch("app.services.db.get_recent_messages", return_value=_HISTORY_WITH_CONTEXT), \
+         patch("app.services.ai.generate_turn", return_value=ai_resp) as mock_ai, \
+         patch("app.services.db.save_message"), \
+         patch("app.services.db.update_session"), \
+         patch("app.services.db.create_request") as mock_create:
+
+        from app.agent import process_turn
+        reply = process_turn("test-chat-1", "Dale puedo hacerte otra consulta")
+
+        assert "otra consulta" in reply.lower()
+        assert "hasta luego" not in reply.lower()
+        mock_ai.assert_called_once()
+        mock_create.assert_not_called()
+
+
+# ── Test adicional: alerta de bucle se inyecta al contexto de IA ───────────────
+
+def test_force_close_hint_is_passed_to_ai_after_two_affirmatives():
+    session = _make_session(phase="fase_2_recogida_datos")
+    history = [
+        {"role": "user", "content": "si"},
+        {"role": "bot", "content": "ok"},
+        {"role": "user", "content": "perfecto"},
+        {"role": "bot", "content": "dale"},
+    ]
+    ai_resp = _make_ai_response("fase_2_recogida_datos", "route_scheduling")
+
+    seen_hint = {"value": None}
+
+    def fake_generate_turn(*args, **kwargs):
+        session_param = kwargs.get("session") if kwargs else args[0]
+        seen_hint["value"] = session_param.get("_force_close_hint")
+        return ai_resp
+
+    with patch("app.services.db.get_or_create_session", return_value=session), \
+         patch("app.services.db.get_recent_messages", return_value=history), \
+         patch("app.services.ai.generate_turn", side_effect=fake_generate_turn), \
+         patch("app.services.db.identify_client", return_value=None), \
+         patch("app.services.db.save_message"), \
+         patch("app.services.db.update_session"), \
+         patch("app.services.db.create_request"):
+
+        from app.agent import process_turn
+        process_turn("test-chat-1", "ok")
+
+        assert seen_hint["value"] is not None
+        assert "ALERTA DE BUCLE" in seen_hint["value"]
+
+
+# ── Test adicional: cancellation no debe crear solicitud ───────────────────────
+
+def test_cancellation_message_mode_does_not_create_request():
+    session = _make_session(phase="fase_2_recogida_datos", intent="route_scheduling")
+    ai_resp = _make_ai_response("fase_2_recogida_datos", "route_scheduling")
+    ai_resp["message_mode"] = "cancellation"
+
+    with patch("app.services.db.get_or_create_session", return_value=session), \
+         patch("app.services.db.get_recent_messages", return_value=_HISTORY_WITH_CONTEXT), \
+         patch("app.services.db.get_catalog_context", return_value=""), \
+         patch("app.services.ai.generate_turn", return_value=ai_resp), \
+         patch("app.services.db.identify_client", return_value=None), \
+         patch("app.services.db.save_message"), \
+         patch("app.services.db.update_session"), \
+         patch("app.services.db.create_request") as mock_create:
+
+        from app.agent import process_turn
+        reply = process_turn("test-chat-1", "Quiero cancelar")
+
+        assert reply == "respuesta de prueba"
+        mock_create.assert_not_called()
+
+
+# ── Test 6: repite sin dar dato -> ofrecer opciones concretas ─────────────────
+
+def test_user_repeats_without_data_gets_concrete_options():
+    history = [
+        {"role": "user", "content": "Necesito una ruta"},
+        {"role": "bot", "content": "¿Me indicás el NIT o nombre de la veterinaria?"},
+        {"role": "user", "content": "No se"},
+        {"role": "bot", "content": "¿Me indicás el NIT o nombre de la veterinaria?"},
+    ]
+    session = _make_session(phase="fase_2_recogida_datos", intent="route_scheduling")
+    ai_resp = _make_ai_response("fase_2_recogida_datos", "route_scheduling")
+    ai_resp["reply"] = (
+        "Te ayudo con eso. Podemos hacerlo de dos formas: "
+        "1) me compartís el NIT, o 2) me das el nombre exacto de la veterinaria."
+    )
+
+    with patch("app.services.db.get_or_create_session", return_value=session), \
+         patch("app.services.db.get_recent_messages", return_value=history), \
+         patch("app.services.db.get_catalog_context", return_value=""), \
+         patch("app.services.ai.generate_turn", return_value=ai_resp), \
+         patch("app.services.db.identify_client", return_value=None), \
+         patch("app.services.db.save_message"), \
+         patch("app.services.db.update_session"), \
+         patch("app.services.db.create_request") as mock_create:
+
+        from app.agent import process_turn
+        reply = process_turn("test-chat-1", "No tengo ese dato")
+
+        assert "1)" in reply
+        assert "2)" in reply
+        assert "nit" in reply.lower()
+        assert "nombre" in reply.lower()
+        mock_create.assert_not_called()
+
+
+# ── Regresión: no repetir escalado cuando ya fue anunciado ────────────────────
+
+def test_no_repeat_handoff_message_when_already_announced_and_user_asks_profiles():
+    session = _make_session(
+        phase="fase_7_escalado",
+        intent="new_client",
+        captured={
+            "tax_id": "22778262",
+            "clinic_name": None,
+            "_asked_if_new_client": True,
+            "_handoff_announced": True,
+            "_client_not_found": True,
+        },
+    )
+    ai_resp = _make_ai_response("fase_7_escalado", "new_client", requires_handoff=True, handoff_area="operaciones")
+    ai_resp["reply"] = "Claro. Tenemos perfiles de hematología, química sanguínea y hormonales."
+    ai_resp["captured_fields"]["tax_id"] = "22778262"
+
+    with patch("app.services.db.get_or_create_session", return_value=session), \
+         patch("app.services.db.get_recent_messages", return_value=_HISTORY_WITH_CONTEXT), \
+         patch("app.services.ai.generate_turn", return_value=ai_resp), \
+         patch("app.services.db.identify_client", return_value=None), \
+         patch("app.services.db.save_message"), \
+         patch("app.services.db.update_session") as mock_update, \
+         patch("app.services.db.create_request") as mock_create:
+
+        from app.agent import process_turn
+        reply = process_turn("test-chat-1", "me podrias informar un poco de los perfiles")
+
+        assert "perfiles" in reply.lower()
+        assert "no encuentro la veterinaria" not in reply.lower()
+        mock_create.assert_not_called()
+
+        update_payload = mock_update.call_args[0][1]
+        assert update_payload["captured_fields"].get("_handoff_announced") is True
+
+
+# ── Regresión: primer escalado marca bandera de anuncio ───────────────────────
+
+def test_first_handoff_sets_announced_flag():
+    session = _make_session(
+        phase="fase_2_recogida_datos",
+        intent="route_scheduling",
+        captured={"_asked_if_new_client": True},
+    )
+    ai_resp = _make_ai_response("fase_2_recogida_datos", "route_scheduling")
+    ai_resp["captured_fields"]["tax_id"] = "22778262"
+
+    with patch("app.services.db.get_or_create_session", return_value=session), \
+         patch("app.services.db.get_recent_messages", return_value=_HISTORY_WITH_CONTEXT), \
+         patch("app.services.db.get_catalog_context", return_value=""), \
+         patch("app.services.ai.generate_turn", return_value=ai_resp), \
+         patch("app.services.db.identify_client", return_value=None), \
+         patch("app.services.db.save_message"), \
+         patch("app.services.db.update_session") as mock_update, \
+         patch("app.services.db.create_request", return_value="req-uuid-handoff") as mock_create:
+
+        from app.agent import process_turn
+        reply = process_turn("test-chat-1", "si soy cliente nuevo")
+
+        assert "atención al cliente" in reply.lower()
+        mock_create.assert_called_once()
+
+        update_payload = mock_update.call_args[0][1]
+        assert update_payload["phase"] == "fase_7_escalado"
+        assert update_payload["captured_fields"].get("_handoff_announced") is True
+
+
+def test_accounting_handoff_does_not_ask_followup_question():
+    session = _make_session(phase="fase_2_recogida_datos", intent="accounting")
+    ai_resp = _make_ai_response("fase_7_escalado", "accounting", requires_handoff=True, handoff_area="contabilidad")
+    ai_resp["reply"] = (
+        "Perfecto, eso lo maneja el equipo de contabilidad. "
+        "¿Me confirmás el número de factura o el valor a pagar?"
+    )
+
+    with patch("app.services.db.get_or_create_session", return_value=session), \
+         patch("app.services.db.get_recent_messages", return_value=_HISTORY_WITH_CONTEXT), \
+         patch("app.services.ai.generate_turn", return_value=ai_resp), \
+         patch("app.services.db.identify_client", return_value=None), \
+         patch("app.services.db.save_message"), \
+         patch("app.services.db.update_session") as mock_update, \
+         patch("app.services.db.create_request") as mock_create:
+
+        from app.agent import process_turn
+        reply = process_turn("test-chat-1", "Tengo una pregunta de pago")
+
+        assert "contabilidad" in reply.lower()
+        assert "?" not in reply
+        update_payload = mock_update.call_args[0][1]
+        assert update_payload["requires_handoff"] is True
+        assert update_payload["phase"] == "fase_7_escalado"
+        mock_create.assert_called_once()
+
+
+def test_non_handoff_reply_is_limited_to_one_question():
+    session = _make_session(phase="fase_2_recogida_datos", intent="route_scheduling", client_id="client-uuid-8")
+    ai_resp = _make_ai_response("fase_2_recogida_datos", "route_scheduling")
+    ai_resp["reply"] = "¿Me compartís el NIT? ¿Y también el nombre de la veterinaria?"
+
+    with patch("app.services.db.get_or_create_session", return_value=session), \
+         patch("app.services.db.get_recent_messages", return_value=_HISTORY_WITH_CONTEXT), \
+         patch("app.services.db.get_catalog_context", return_value=""), \
+         patch("app.services.ai.generate_turn", return_value=ai_resp), \
+         patch("app.services.db.save_message"), \
+         patch("app.services.db.update_session") as mock_update, \
+         patch("app.services.db.create_request") as mock_create:
+
+        from app.agent import process_turn
+        reply = process_turn("test-chat-1", "Necesito programar una ruta")
+
+        assert reply.count("?") == 1
+        update_payload = mock_update.call_args[0][1]
+        assert update_payload["reply"].count("?") == 1
+        mock_create.assert_not_called()
+
+
+def test_route_closure_requires_payment_question_before_finish():
+    session = _make_session(phase="fase_2_recogida_datos", intent="route_scheduling", client_id="client-uuid-9")
+    ai_resp = _make_ai_response("fase_6_cierre", "route_scheduling")
+    ai_resp["captured_fields"].update({
+        "clinic_name": "Clínica Test",
+        "pickup_address": "Calle 1",
+        "exam_type": "hemograma",
+        "patient_name": "Toby",
+        "species": "canino",
+        "payment_method": None,
+    })
+
+    with patch("app.services.db.get_or_create_session", return_value=session), \
+         patch("app.services.db.get_recent_messages", return_value=_HISTORY_WITH_CONTEXT), \
+         patch("app.services.db.get_catalog_context", return_value=""), \
+         patch("app.services.ai.generate_turn", return_value=ai_resp), \
+         patch("app.services.db.identify_client", return_value=None), \
+         patch("app.services.db.save_message"), \
+         patch("app.services.db.update_session") as mock_update, \
+         patch("app.services.db.create_request") as mock_create:
+
+        from app.agent import process_turn
+        reply = process_turn("test-chat-1", "Todo bien")
+
+        assert "contado" in reply.lower()
+        assert "contraentrega" in reply.lower()
+        update_payload = mock_update.call_args[0][1]
+        assert update_payload["phase"] == "fase_2_recogida_datos"
+        assert update_payload["captured_fields"].get("payment_method") is None
+        mock_create.assert_not_called()
+
+
+def test_route_with_contado_sets_accounting_handoff_and_creates_request():
+    session = _make_session(phase="fase_2_recogida_datos", intent="route_scheduling", client_id="client-uuid-10")
+    ai_resp = _make_ai_response("fase_6_cierre", "route_scheduling", requires_handoff=True, handoff_area=None)
+    ai_resp["reply"] = "Perfecto, dejamos pago de contado. ¿Algo más?"
+    ai_resp["captured_fields"].update({
+        "clinic_name": "Clínica Test",
+        "pickup_address": "Calle 1",
+        "exam_type": "hemograma",
+        "patient_name": "Toby",
+        "species": "canino",
+        "payment_method": "contado",
+    })
+
+    with patch("app.services.db.get_or_create_session", return_value=session), \
+         patch("app.services.db.get_recent_messages", return_value=_HISTORY_WITH_CONTEXT), \
+         patch("app.services.db.get_catalog_context", return_value=""), \
+         patch("app.services.ai.generate_turn", return_value=ai_resp), \
+         patch("app.services.db.identify_client", return_value=None), \
+         patch("app.services.db.save_message"), \
+         patch("app.services.db.update_session") as mock_update, \
+         patch("app.services.db.create_request", return_value="req-uuid-pay-1") as mock_create:
+
+        from app.agent import process_turn
+        reply = process_turn("test-chat-1", "Pago de contado")
+
+        assert "?" not in reply
+        update_payload = mock_update.call_args[0][1]
+        assert update_payload["phase"] == "fase_7_escalado"
+        assert update_payload["handoff_area"] == "contabilidad"
+        mock_create.assert_called_once()
+        request_payload = mock_create.call_args[0][2]
+        assert request_payload["captured_fields"].get("payment_method") == "contado"
+
+
+def test_route_with_contraentrega_closes_without_handoff():
+    session = _make_session(phase="fase_2_recogida_datos", intent="route_scheduling", client_id="client-uuid-11")
+    ai_resp = _make_ai_response("fase_6_cierre", "route_scheduling")
+    ai_resp["captured_fields"].update({
+        "clinic_name": "Clínica Test",
+        "pickup_address": "Calle 1",
+        "exam_type": "hemograma",
+        "patient_name": "Toby",
+        "species": "canino",
+        "payment_method": "contraentrega",
+    })
+
+    with patch("app.services.db.get_or_create_session", return_value=session), \
+         patch("app.services.db.get_recent_messages", return_value=_HISTORY_WITH_CONTEXT), \
+         patch("app.services.db.get_catalog_context", return_value=""), \
+         patch("app.services.ai.generate_turn", return_value=ai_resp), \
+         patch("app.services.db.identify_client", return_value=None), \
+         patch("app.services.db.save_message"), \
+         patch("app.services.db.update_session") as mock_update, \
+         patch("app.services.db.create_request", return_value="req-uuid-pay-2") as mock_create:
+
+        from app.agent import process_turn
+        process_turn("test-chat-1", "Pago contraentrega")
+
+        update_payload = mock_update.call_args[0][1]
+        assert update_payload["phase"] == "fase_6_cierre"
+        assert update_payload["requires_handoff"] is False
+        mock_create.assert_called_once()
+        request_payload = mock_create.call_args[0][2]
+        assert request_payload["captured_fields"].get("payment_method") == "contraentrega"

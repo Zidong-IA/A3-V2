@@ -4,6 +4,14 @@
 
 ---
 
+## Sesión local de desarrollo
+
+> Al iniciar cualquier sesión de trabajo leer `docs/runbooks/sesion-local.md`.
+> ngrok genera una URL nueva cada vez — hay que actualizar Telegram y Chatwoot
+> antes de probar cualquier cosa. El runbook tiene todos los pasos y datos.
+
+---
+
 ## Workflow de trabajo
 
 ### Modo Plan por defecto

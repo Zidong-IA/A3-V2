@@ -37,6 +37,12 @@ RESPONSE_SCHEMA = {
                     "species":        {"anyOf": [{"type": "string"}, {"type": "null"}]},
                     "patient_age":    {"anyOf": [{"type": "string"}, {"type": "null"}]},
                     "owner_name":     {"anyOf": [{"type": "string"}, {"type": "null"}]},
+                    "payment_method": {
+                        "anyOf": [
+                            {"type": "string", "enum": ["contado", "contraentrega"]},
+                            {"type": "null"},
+                        ]
+                    },
                     "selected_tests": {
                         "anyOf": [
                             {"type": "array", "items": {"type": "string"}},
@@ -47,6 +53,7 @@ RESPONSE_SCHEMA = {
                 "required": [
                     "clinic_name", "tax_id", "pickup_address", "exam_type",
                     "patient_name", "species", "patient_age", "owner_name",
+                    "payment_method",
                     "selected_tests",
                 ],
                 "additionalProperties": False,
