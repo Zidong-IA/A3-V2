@@ -17,7 +17,12 @@ Telegram → Flask webhook → process_turn() → OpenAI → Supabase → Telegr
 ### API (`app/main.py`)
 - Responsabilidad: recibir webhook de Telegram, validar secret, llamar `process_turn()`
 - < 100 líneas, sin lógica de negocio
-- Solo dos rutas: `POST /webhook` y `GET /health`
+- Rutas de webhook/salud y registro de blueprints
+
+### API de plataforma (`app/platform_api.py`)
+- Responsabilidad: exponer datos operativos para dashboard/plataforma interna
+- Endpoints: overview de operación, clientes, solicitudes, eventos y actualización de estado
+- Seguridad opcional por header `X-Platform-Token` cuando `PLATFORM_API_TOKEN` está configurado
 
 ### Agente (`app/agent.py`)
 - Responsabilidad: orquestar un turno de conversación completo
@@ -180,3 +185,5 @@ any → cancelled
 Ver [decisions/](decisions/) para el registro completo.
 
 - [001 — Selección de stack](decisions/001-stack-selection.md)
+- [002 — Forma de pago dentro del flujo conversacional](decisions/002-payment-method-in-flow.md)
+- [003 — API interna para integración de plataforma](decisions/003-platform-integration-api.md)

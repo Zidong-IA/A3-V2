@@ -71,4 +71,23 @@ APP_TIMEZONE=America/Bogota
 CUTOFF_HOUR=17
 CUTOFF_MINUTE=30
 FLASK_SECRET_KEY
+PLATFORM_API_TOKEN=opcional-token-interno
 ```
+
+## API de integración con plataforma
+
+Para conectar este agente con una plataforma interna (dashboard/ops), se expone una API REST de lectura y actualización operativa usando la misma base de datos de Supabase.
+
+Endpoints:
+
+- `GET /api/platform/overview` → resumen operativo (clientes, solicitudes, flujo conversacional)
+- `GET /api/platform/clients` → listado de clientes y motorizado asignado
+- `GET /api/platform/requests` → listado de solicitudes (filtro opcional por `status`)
+- `GET /api/platform/requests/unassigned` → solicitudes de ruta sin asignación de motorizado
+- `GET /api/platform/requests/<request_id>/events` → historial de eventos de una solicitud
+- `PATCH /api/platform/requests/<request_id>/status` → actualizar estado operativo de solicitud (registra `status_updated` en `request_events`)
+
+Autenticación:
+
+- Si `PLATFORM_API_TOKEN` está configurado, todas las rutas `/api/platform/*` exigen header `X-Platform-Token`.
+- Si no está configurado, las rutas quedan disponibles para desarrollo interno.

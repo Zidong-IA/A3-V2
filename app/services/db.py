@@ -185,6 +185,98 @@ def get_courier_for_client(client_id: str) -> dict | None:
     return None
 
 
+def list_clients_with_assignment(limit: int = 500) -> list[dict]:
+    result = (
+        _client.table("clients")
+        .select(
+            "id, clinic_name, tax_id, phone, address, zone, billing_type, is_active, "
+            "client_courier_assignment(courier_id, couriers(id, name, phone, availability, is_active))"
+        )
+        .order("clinic_name")
+        .limit(limit)
+        .execute()
+    )
+    return result.data or []
+
+
+def list_requests(limit: int = 500, status: str | None = None) -> list[dict]:
+    query = (
+        _client.table("requests")
+        .select(
+            "id, client_id, service_area, intent, priority, status, exam_type, patient_name, "
+            "pickup_address, scheduled_pickup_date, assigned_courier_id, fallback_reason, requested_at, "
+            "clients(clinic_name), couriers(name)"
+        )
+        .order("requested_at", desc=True)
+        .limit(limit)
+    )
+    if status:
+        query = query.eq("status", status)
+    result = query.execute()
+    return result.data or []
+
+
+def list_sessions(limit: int = 500) -> list[dict]:
+    result = (
+        _client.table("telegram_sessions")
+        .select(
+            "external_chat_id, client_id, phase_current, intent_current, requires_handoff, "
+            "handoff_area, updated_at, clients(clinic_name)"
+        )
+        .order("updated_at", desc=True)
+        .limit(limit)
+        .execute()
+    )
+    return result.data or []
+
+
+def list_request_events(request_id: str, limit: int = 20) -> list[dict]:
+    result = (
+        _client.table("request_events")
+        .select("id, request_id, event_type, event_payload, created_at")
+        .eq("request_id", request_id)
+        .order("created_at", desc=True)
+        .limit(limit)
+        .execute()
+    )
+    return result.data or []
+
+
+def update_request_status(
+    request_id: str,
+    status: str,
+    assigned_courier_id: str | None = None,
+    fallback_reason: str | None = None,
+) -> dict | None:
+    payload: dict = {"status": status}
+    if assigned_courier_id is not None:
+        payload["assigned_courier_id"] = assigned_courier_id
+    if fallback_reason is not None:
+        payload["fallback_reason"] = fallback_reason
+
+    result = (
+        _client.table("requests")
+        .update(payload)
+        .eq("id", request_id)
+        .execute()
+    )
+    if not result.data:
+        return None
+
+    updated = result.data[0]
+    _client.table("request_events").insert({
+        "request_id": request_id,
+        "event_type": "status_updated",
+        "event_payload": {
+            "source": "platform_api",
+            "status": updated.get("status"),
+            "assigned_courier_id": updated.get("assigned_courier_id"),
+            "fallback_reason": updated.get("fallback_reason"),
+        },
+    }).execute()
+    return updated
+
+
 # ── Requests ──────────────────────────────────────────────────────────────────
 
 def create_request(chat_id: str, session: dict, ai_response: dict) -> str | None:

@@ -1,11 +1,13 @@
 from flask import Flask, request, jsonify, abort
-from app.config import TELEGRAM_WEBHOOK_SECRET, FLASK_SECRET_KEY, CHATWOOT_AGENT_BOT_TOKEN
+from app.config import TELEGRAM_WEBHOOK_SECRET, FLASK_SECRET_KEY
 from app.agent import process_turn
 from app.services import telegram, chatwoot
 from app.services.db import get_or_create_session
+from app.platform_api import platform_api
 
 app = Flask(__name__)
 app.secret_key = FLASK_SECRET_KEY
+app.register_blueprint(platform_api)
 
 
 @app.route("/webhooks/telegram", methods=["POST"])
