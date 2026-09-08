@@ -4803,3 +4803,28 @@ todos los estados de una: es el atajo para no depender de acordarse de los filtr
 
 **Decirselo a A3 al entregar los accesos**, o van a reportar "no me llegan las
 conversaciones" teniendolas todas delante.
+
+---
+
+## ERR-182 — Render reiniciaba el servicio porque el health check era lento
+
+- **Fecha:** 2026-09-04 · **Estado:** RESUELTO
+- **Sintoma:** alertas de Render — `HTTP health check failed (timed out after 5 seconds)` y
+  `Get "http://10.x.x.x:10000/health": EOF`. Instancias marcadas como caidas y reiniciadas.
+- **Causa raiz medida:** `/health` consultaba TODAS las dependencias en cada llamada y
+  tardaba **2,5-3,1 s**: Alegra ~1.470 ms (llamada a su API) + Anarvet ~1.130 ms (conexion
+  a su PostgreSQL en Colombia) + Supabase ~120 ms. Render corta a los **5 s**: cualquier
+  pico de Alegra o Anarvet pasaba el limite, Render daba por muerta la instancia y la
+  reiniciaba.
+- **Por que importa mas de lo que parece:** cada reinicio **corta las conversaciones en
+  curso** — el buffer anti-rafagas (MessageDebouncer) vive en memoria del proceso. Y
+  ademas le abriamos una conexion a la base de Anarvet cada pocos segundos, con un usuario
+  que nos dieron de solo lectura para un sync esporadico.
+- **Solucion:** dos chequeos separados.
+  - `GET /health` → `check_liveness()`: SOLO Supabase, la unica dependencia sin la cual el
+    servicio no sirve para nada. Es el que mira Render. 503 solo si Supabase cae, que es
+    cuando reiniciar realmente ayuda.
+  - `GET /health/detalle` → `check_all()`: el completo con Alegra, Anarvet y PDF, para
+    mirar a mano o desde un monitor externo.
+- **Verificacion:** 3 tests nuevos, incluido uno que afirma que el liviano NO toca Alegra,
+  Anarvet ni el PDF — que son justamente los lentos.

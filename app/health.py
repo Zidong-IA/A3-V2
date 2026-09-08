@@ -12,6 +12,21 @@ de lo que solo lo degrada.
   la facturación, no la recogida de muestras.
 - Anarvet ídem: es una base externa fuera de nuestro control; que caiga degrada
   el sync del espejo de resultados, nunca tumba el servicio.
+
+DOS chequeos, a propósito (2026-09-04):
+
+`check_liveness()` es el que mira Render cada pocos segundos: solo Supabase, que
+es lo único sin lo cual el servicio no sirve para nada. Tiene que ser RÁPIDO.
+
+`check_all()` es el completo, para mirar a mano o desde un monitor externo.
+
+Por qué se separaron: el completo tarda 2,5-3 s porque llama a la API de Alegra
+(~1,5 s) y abre una conexión a la base de Anarvet en Colombia (~1,1 s). Render
+corta a los 5 s: un pico de cualquiera de los dos hacía que diera timeout, Render
+daba por muerta la instancia y la REINICIABA — cortando las conversaciones en
+curso (el buffer anti-ráfagas vive en memoria del proceso). Además le abríamos una
+conexión a Anarvet cada pocos segundos, con un usuario que nos dieron de solo
+lectura para un sync esporádico.
 """
 import time
 
@@ -33,6 +48,19 @@ def _timed(check_fn) -> dict:
     except Exception as e:  # noqa: BLE001 — cualquier fallo es un fallo de salud
         elapsed = int((time.monotonic() - started) * 1000)
         return {"status": "error", "latency_ms": elapsed, "error": str(e)[:200]}
+
+
+def check_liveness() -> tuple[dict, int]:
+    """Chequeo LIVIANO para el health check de Render: ¿está vivo y con base?
+
+    Solo Supabase, que es la única dependencia sin la cual el servicio no puede
+    hacer nada. Alegra, Anarvet y el PDF degradan funciones puntuales pero no
+    justifican reiniciar el servicio — y son justamente los lentos."""
+    supabase = _timed(db.ping)
+    caida = supabase["status"] == "error"
+    return ({"status": "error" if caida else "ok", "env": APP_ENV,
+             "checks": {"supabase": supabase}},
+            503 if caida else 200)
 
 
 def check_all() -> tuple[dict, int]:

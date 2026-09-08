@@ -9,7 +9,7 @@ from app.config import (
 from app.agent import process_turn
 from app.alerts import notify_error
 from app.results_delivery import deliver_pending
-from app.health import check_all
+from app.health import check_all, check_liveness
 from app.services import telegram, chatwoot
 from app.services.db import get_or_create_session
 from app.services.debounce import MessageDebouncer
@@ -231,8 +231,17 @@ def setup_webhook():
 
 @app.route("/health", methods=["GET"])
 def health():
-    """Salud real de las dependencias. 503 si Supabase no responde, para que un
-    monitor externo detecte la caída en vez de recibir un OK fijo."""
+    """El que mira Render cada pocos segundos: liviano a propósito (ERR-182).
+    Solo Supabase — 503 si no responde, que es cuando reiniciar SÍ sirve."""
+    payload, status_code = check_liveness()
+    return jsonify(payload), status_code
+
+
+@app.route("/health/detalle", methods=["GET"])
+def health_detalle():
+    """Salud completa de TODAS las dependencias (Alegra, Anarvet, PDF incluidos).
+    Tarda ~3 s: es para mirar a mano o desde un monitor externo, nunca para el
+    health check de la plataforma."""
     payload, status_code = check_all()
     return jsonify(payload), status_code
 
