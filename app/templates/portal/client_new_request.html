@@ -6,68 +6,115 @@
 <a class="ghost-btn" href="{{ url_for('portal.client_requests_page') }}"><i data-lucide="arrow-left"></i>Volver</a>
 {% endblock %}
 
+{# Mismo molde que la carga manual del laboratorio (new_request.html): pasos numerados y
+   el catálogo con buscador. El cliente pide lo mismo que el personal carga a mano, así
+   que no hay razón para que lo vea distinto. La diferencia real es que acá la veterinaria
+   sale de la sesión y no se elige. #}
 {% block content %}
-<section class="card">
-  <div class="card-head"><h3>Datos de la muestra</h3><p>El motorizado asignado a su zona pasará según el horario de corte del laboratorio (17:30).</p></div>
-  <form method="post" action="{{ url_for('portal.client_new_request') }}">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+<form method="post" action="{{ url_for('portal.client_new_request') }}" class="wizard-form os-stagger">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+  <section class="wizard-card">
+    <div class="step-badge">1</div>
+    <div class="section-copy"><h2>Paciente</h2><p>Los mismos datos que pide el agente en el chat.</p></div>
     <div class="form-grid">
-      <label>Paciente *
-        <input name="patient_name" type="text" value="{{ form.get('patient_name', '') }}" required>
-      </label>
-      <label>Especie
-        <input name="species" type="text" value="{{ form.get('species', '') }}" placeholder="Canino, felino…">
-      </label>
-      <label>Edad del paciente
-        <input name="patient_age" type="text" value="{{ form.get('patient_age', '') }}">
-      </label>
-      <label>Propietario
-        <input name="owner_name" type="text" value="{{ form.get('owner_name', '') }}">
-      </label>
-      <label>Perfil del catálogo
-        <select name="profile_code" class="cell-select">
-          <option value="">Sin perfil — solo análisis sueltos</option>
-          {% for p in catalog.profiles %}
-          <option value="{{ p.code }}" {{ 'selected' if form.get('profile_code') == p.code else '' }}>
-            {{ p.name }}{% if p.price %} — ${{ '{:,.0f}'.format(p.price|float)|replace(',', '.') }}{% endif %}
-          </option>
-          {% endfor %}
+      <label>Paciente *<input name="patient_name" required value="{{ form.get('patient_name', '') }}"></label>
+      <label>Especie<input name="species" value="{{ form.get('species', '') }}" placeholder="Canino, felino, bovino..."></label>
+      <label>Raza<input name="breed" value="{{ form.get('breed', '') }}"></label>
+      <label>Sexo
+        <select name="sex" class="cell-select">
+          <option value="">Sin indicar</option>
+          <option value="Macho" {{ 'selected' if form.get('sex') == 'Macho' else '' }}>Macho</option>
+          <option value="Hembra" {{ 'selected' if form.get('sex') == 'Hembra' else '' }}>Hembra</option>
         </select>
       </label>
-      <label>Médico solicitante
-        <input name="requesting_doctor" type="text" value="{{ form.get('requesting_doctor', '') }}">
+      <label>Edad<input name="patient_age" value="{{ form.get('patient_age', '') }}" placeholder="5 años, 3 meses, 45 días"></label>
+      <label>Propietario<input name="owner_name" value="{{ form.get('owner_name', '') }}"></label>
+      <label>Fecha de toma de muestra
+        <input name="sample_taken_date" type="date" value="{{ form.get('sample_taken_date', '') }}">
       </label>
-      <label>Dirección de retiro
-        <input name="pickup_address" type="text" value="{{ form.get('pickup_address', '') }}" placeholder="{{ (client or {}).address or 'Dirección registrada' }}">
-      </label>
-      <label>Forma de pago
-        <select name="payment_method" class="cell-select">
-          {% for value, label in payment_options %}
-          <option value="{{ value }}" {{ 'selected' if form.get('payment_method') == value else '' }}>{{ label }}</option>
-          {% endfor %}
-        </select>
-      </label>
+      <label>Médico solicitante<input name="requesting_doctor" value="{{ form.get('requesting_doctor', '') }}"></label>
     </div>
-    <div class="full-field">
-      <label>Análisis del catálogo
-        <span class="muted-text">Elija uno o varios. Si ya seleccionó un perfil, estos se suman.</span>
-        <select name="test_codes" class="cell-select catalog-multi" multiple size="8">
-          {% for t in catalog.tests %}
-          <option value="{{ t.code }}" {{ 'selected' if t.code in selected_test_codes else '' }}>
-            {{ t.name }}{% if t.price %} — ${{ '{:,.0f}'.format(t.price|float)|replace(',', '.') }}{% endif %}
-          </option>
-          {% endfor %}
-        </select>
-      </label>
+  </section>
+
+  <section class="wizard-card">
+    <div class="step-badge">2</div>
+    <div class="section-copy"><h2>Análisis</h2><p>Del catálogo: el código y el precio nunca se escriben a mano.</p></div>
+    <div class="wizard-content">
+      <div class="catalog-picker">
+        <div class="catalog-box" data-picker="profile">
+          <div class="catalog-box-head">
+            <strong>Perfiles</strong>
+            <span class="table-counter" data-picker-count>0</span>
+          </div>
+          <input type="search" class="cell-input" placeholder="Buscar perfil por nombre o código" data-picker-search aria-label="Buscar perfil">
+          <div class="catalog-list" data-picker-list>
+            {% for p in catalog.profiles %}
+            <label class="catalog-item" data-text="{{ (p.code ~ ' ' ~ p.name) | lower }}">
+              <input type="checkbox" name="profile_codes" value="{{ p.code }}"
+                     {{ 'checked' if p.code in selected_profile_codes else '' }}>
+              <span><strong>{{ p.name }}</strong><small>{{ p.code }}{% if p.price %} · ${{ '{:,.0f}'.format(p.price|float)|replace(',', '.') }}{% endif %}</small></span>
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="catalog-box" data-picker="test">
+          <div class="catalog-box-head">
+            <strong>Análisis sueltos</strong>
+            <span class="table-counter" data-picker-count>0</span>
+          </div>
+          <input type="search" class="cell-input" placeholder="Buscar análisis por nombre o código" data-picker-search aria-label="Buscar análisis">
+          <div class="catalog-list" data-picker-list>
+            {% for t in catalog.tests %}
+            <label class="catalog-item" data-text="{{ (t.code ~ ' ' ~ t.name) | lower }}">
+              <input type="checkbox" name="test_codes" value="{{ t.code }}"
+                     {{ 'checked' if t.code in selected_test_codes else '' }}>
+              <span><strong>{{ t.name }}</strong><small>{{ t.code }}{% if t.price %} · ${{ '{:,.0f}'.format(t.price|float)|replace(',', '.') }}{% endif %}</small></span>
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <div class="catalog-chosen" data-picker-chosen hidden>
+        <span class="muted-text">En esta orden:</span>
+        <ul data-picker-chips></ul>
+      </div>
     </div>
-    <div class="full-field">
-      <label>Observaciones
-        <textarea name="observations" rows="3">{{ form.get('observations', '') }}</textarea>
-      </label>
+  </section>
+
+  <section class="wizard-card">
+    <div class="step-badge">3</div>
+    <div class="section-copy"><h2>Retiro y pago</h2><p>El motorizado de su zona pasa según el horario de corte (17:30).</p></div>
+    <div class="wizard-content">
+      <div class="form-grid">
+        <label>Dirección de retiro
+          <input name="pickup_address" value="{{ form.get('pickup_address', '') }}"
+                 placeholder="{{ (client or {}).address or 'Dirección registrada' }}">
+        </label>
+        <label>Forma de pago
+          <select name="payment_method" class="cell-select">
+            {% for value, label in payment_options %}
+            <option value="{{ value }}" {{ 'selected' if form.get('payment_method') == value else '' }}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </label>
+      </div>
+      <div class="full-field">
+        <label>Observaciones
+          <textarea name="observations" rows="3">{{ form.get('observations', '') }}</textarea>
+        </label>
+      </div>
     </div>
-    <div class="wizard-actions">
-      <button type="submit" class="primary-btn"><i data-lucide="send"></i>Registrar solicitud</button>
-    </div>
-  </form>
-</section>
+  </section>
+
+  <div class="wizard-actions">
+    <button type="submit" class="primary-btn"><i data-lucide="send"></i>Registrar solicitud</button>
+  </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='new-request.js') }}?v=2" defer></script>
 {% endblock %}

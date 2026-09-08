@@ -778,3 +778,21 @@ lo cazó antes de tocar nada, pero la lección vale para cualquier expansión de
 motor de abajo interpreta "más tokens" como "más ítems pedidos", enriquecer la entrada
 inventa pedidos. Y el diccionario nunca manda sobre el catálogo: si la palabra existe como
 nombre real, esa gana.
+
+## 2026-09-08 — Dos formularios para el mismo dato no pueden verse distinto
+
+**Qué pasó.** El usuario notó que pedir un análisis desde el portal "se ve muy distinto"
+a la plataforma. Era cierto y no era solo estético: el cliente elegía de un
+`<select multiple>` con 275 análisis sin buscador y un solo perfil de 163; el personal
+tenía buscador, casillas, chips y varios perfiles. El que usa la herramienta todos los
+días tenía la buena; el que entra de vez en cuando, la mala.
+
+**Patrón.** Cuando existan dos pantallas que capturan el MISMO dato para roles distintos
+(staff y cliente), compartir el widget y el molde visual, no reescribirlo más pobre del
+lado del cliente. Compartir la lógica de negocio (`resolve_catalog_selection` ya estaba
+compartida, y ahí no hubo problema) no alcanza: la UI también se duplica y se degrada.
+
+**Regla.** Antes de escribir un formulario nuevo, buscar si ya existe uno que capture lo
+mismo y reutilizar su template/JS/CSS. Acá `new-request.js` y las clases de `app.css`
+sirvieron sin tocar una línea: el JS ya tenía guardas para los campos que no existen en
+el otro contexto.

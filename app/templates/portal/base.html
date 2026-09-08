@@ -56,5 +56,6 @@
   </div>
   <script>window.addEventListener('DOMContentLoaded', function () { if (window.lucide) lucide.createIcons(); });</script>
   <script src="{{ url_for('static', filename='os-fx.js') }}?v=1" defer></script>
+  {% block scripts %}{% endblock %}
 </body>
 </html>

@@ -1550,3 +1550,45 @@ ajustes → Anarvet → WhatsApp → lanzamiento → semana de testeo.
 - [ ] **Anotación para el futuro**: cuando el espejo traiga el código "Centro Medico
       Veterinario Los Andes", corresponde al cliente "CMV Los Andes" (aclarado por A3;
       el automatch no lo va a emparejar solo porque la sigla no matchea).
+
+---
+
+## Portal: igualar el formulario de pedido al de la plataforma (2026-09-08)
+
+Pedido del usuario: "cuando el cliente quiere hacer un pedido de análisis se ve muy
+distinto a cómo se ve en la plataforma". Alcance elegido: igualar TODO (pasos numerados,
+selector de catálogo buscable y los campos que faltaban). Deploy: solo local, el usuario
+decide después si va a Render.
+
+Diagnóstico: el portal usaba `<select multiple size=8>` para 275 análisis y un `<select>`
+simple para 163 perfiles (uno solo). El admin ya tenía buscador + casillas + chips y
+aceptaba varios perfiles. `resolve_catalog_selection` YA acepta lista de perfiles
+(orders.py:802), así que el backend del portal solo tenía que mandarla.
+
+- [x] Backend `app/portal/client_requests.py`: `profile_codes` con getlist, campos
+      `breed`/`sex`/`sample_taken_date`, y re-marcar lo elegido cuando el POST falla
+- [x] `app/templates/portal/base.html`: bloque `{% block scripts %}` para el JS de la página
+- [x] `app/templates/portal/client_new_request.html`: 3 pasos (Paciente → Análisis →
+      Retiro y pago) reutilizando `wizard-card`, `catalog-picker` y `new-request.js`
+- [x] Verificar en local: GET 200, POST crea la orden con varios perfiles y campos nuevos
+- [x] Tests de regresión del portal en verde
+
+### Resultado (2026-09-08)
+
+Hecho y verificado en local. El formulario del portal quedó con los mismos 3 pasos, el
+mismo selector buscable y los mismos campos que la carga manual del laboratorio.
+
+- `resolve_catalog_selection` ya aceptaba varios perfiles: el portal solo mandaba uno.
+  Verificado con perfiles reales: el 2º viaja en `_extra_profiles` con su precio.
+- Se reutilizan `new-request.js` y las clases de `app.css` (`wizard-card`, `catalog-picker`):
+  no se escribió CSS ni JS nuevo. El JS ya traía guardas para cuando no hay selector de
+  cliente, que es justo el caso del portal.
+- Capturas revisadas en 1440px y 390px: en celular queda en una columna con casillas
+  tocables (antes era `Ctrl+click`, gesto que no existe en celular).
+- Suite completa: 1524 passed, 4 skipped, 1 xfailed. Tests nuevos en
+  `tests/test_portal_new_request_form.py` (4).
+
+PENDIENTE de decisión del usuario:
+- No se hizo un POST real end-to-end: `db.create_request` avisa al motorizado por Chatwoot
+  si el cliente tiene uno asignado (db.py:2341), y sería un mensaje real a una persona.
+- Deploy a Render: el usuario revisa local y decide.

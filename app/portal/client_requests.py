@@ -181,15 +181,17 @@ def client_new_request():
         fields = {
             key: (request.form.get(key) or "").strip() or None
             for key in (
-                "patient_name", "species", "patient_age", "owner_name",
-                "pickup_address", "observations", "payment_method", "requesting_doctor",
+                "patient_name", "species", "breed", "sex", "patient_age", "owner_name",
+                "sample_taken_date", "pickup_address", "observations", "payment_method",
+                "requesting_doctor",
             )
         }
         # El análisis sale del catálogo, no de texto libre (ERR-097).
         selected_test_codes = request.form.getlist("test_codes")
-        fields.update(resolve_catalog_selection(
-            (request.form.get("profile_code") or "").strip(), selected_test_codes,
-        ))
+        # Varios perfiles en una misma orden, igual que el formulario del laboratorio: el
+        # cliente puede pedir prequirúrgico + hemograma para el mismo paciente (ERR-077).
+        selected_profile_codes = [c.strip() for c in request.form.getlist("profile_codes") if c.strip()]
+        fields.update(resolve_catalog_selection(selected_profile_codes, selected_test_codes))
         if not fields["patient_name"] or not fields["exam_type"]:
             flash(
                 "Indique el paciente y al menos un perfil o análisis del catálogo",
@@ -198,6 +200,7 @@ def client_new_request():
             return render_template(
                 "portal/client_new_request.html", client=client, form=request.form,
                 catalog=catalog, selected_test_codes=selected_test_codes,
+                selected_profile_codes=selected_profile_codes,
                 payment_options=PAYMENT_METHOD_OPTIONS, active_tab="solicitudes",
             )
         fields["pickup_address"] = fields["pickup_address"] or (client or {}).get("address")
@@ -230,8 +233,8 @@ def client_new_request():
 
     return render_template(
         "portal/client_new_request.html", client=client, form={}, catalog=catalog,
-        selected_test_codes=[], payment_options=PAYMENT_METHOD_OPTIONS,
-        active_tab="solicitudes",
+        selected_test_codes=[], selected_profile_codes=[],
+        payment_options=PAYMENT_METHOD_OPTIONS, active_tab="solicitudes",
     )
 
 
